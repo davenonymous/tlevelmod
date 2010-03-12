@@ -6,13 +6,15 @@
 
 #define SOUND_LEVELUP "ui/item_acquired.wav"
 #define PLUGIN_VERSION "0.1.2"
-#define MAXLEVELS 200
-#define FMAXLEVELS 200.0
+#define MAXLEVELS 101
+#define FMAXLEVELS 100.0
 
 new g_playerLevel[MAXPLAYERS+1];
 new g_playerExp[MAXPLAYERS+1];
 new g_playerExpNext[MAXPLAYERS+1];
 new Handle:g_hLevelHUD[MAXPLAYERS+1] = INVALID_HANDLE;
+new Handle:g_hTimerAdvertisement[MAXPLAYERS+1] = INVALID_HANDLE;
+
 new Handle:g_hHudLevel;
 new Handle:g_hHudExp;
 new Handle:g_hHudPlus1;
@@ -25,6 +27,7 @@ new Handle:g_hCvarLevel_max;
 new Handle:g_hForwardLevelUp;
 new Handle:g_hCvarExp_ReqBase;
 new Handle:g_hCvarExp_ReqMulti;
+
 
 new bool:g_bEnabled;
 new g_iXPForLevel[MAXLEVELS];
@@ -113,8 +116,8 @@ stock FillXPForLevel() {
 	g_iXPForLevel[0] = 0;
 	g_iXPForLevel[1] = g_iExpReqBase;
 
-	LogMessage("Level %i: %i", 0, 0);
-	LogMessage("Level %i: %i", 1, g_iExpReqBase);
+	//LogMessage("Level %i: %i", 0, 0);
+	//LogMessage("Level %i: %i", 1, g_iExpReqBase);
 
 	for(new level=2; level < MAXLEVELS; level++) {
 		g_iXPForLevel[level] = g_iXPForLevel[level-1] + RoundFloat(g_iExpReqBase*level*g_fExpReqMult);
@@ -133,7 +136,7 @@ public OnClientPostAdminCheck(client)
 		g_playerExpNext[client] = GetMinXPForLevel(g_iLevelDefault+1);
 
 		g_hLevelHUD[client] = CreateTimer(5.0, Timer_DrawHud, client);
-		CreateTimer(60.0, Timer_Advertisement, client);
+		g_hTimerAdvertisement[client] = CreateTimer(60.0, Timer_Advertisement, client);
 	}
 }
 
@@ -176,7 +179,7 @@ public Action:Timer_DrawHud(Handle:timer, any:client)
 		}
 	}
 
-	g_hLevelHUD[client] = CreateTimer(2.0, Timer_DrawHud, client);
+	g_hLevelHUD[client] = CreateTimer(1.9, Timer_DrawHud, client);
 	return Plugin_Handled;
 }
 
@@ -219,7 +222,11 @@ public OnClientDisconnect(client)
 {
 	if(g_bEnabled)
 	{
-		CloseHandle(Handle:g_hLevelHUD[client]);
+		if(g_hLevelHUD[client]!=INVALID_HANDLE)
+			CloseHandle(g_hLevelHUD[client]);
+
+		if(g_hTimerAdvertisement[client]!=INVALID_HANDLE)
+			CloseHandle(g_hTimerAdvertisement[client]);
 	}
 }
 
@@ -228,13 +235,12 @@ public OnClientDisconnect(client)
 ///////////////
 stock CheckAndLevelUp(client) {
 	new bool:bGrown = false;
-	new currentLevel = g_playerLevel[client];
-	if(g_playerExp[client] >= g_playerExpNext[client] && g_playerLevel[client] < g_iLevelMax)
+	while(g_playerExp[client] >= g_playerExpNext[client] && g_playerLevel[client] < g_iLevelMax && g_playerExpNext[client] != -1)
 	{
-		LogMessage("Player is not level %i anymore", currentLevel);
+		LogMessage("Player is not level %i anymore, (%i >= %i)", g_playerLevel[client], g_playerExp[client], g_playerExpNext[client]);
 
-		currentLevel++;
-		g_playerExpNext[client] = GetMinXPForLevel(currentLevel);
+		g_playerLevel[client]++;
+		g_playerExpNext[client] = GetMinXPForLevel(g_playerLevel[client]+1);
 
 		bGrown = true;
 		if(g_playerLevel[client] == g_iLevelMax) {
@@ -242,7 +248,6 @@ stock CheckAndLevelUp(client) {
 		}
 	}
 
-	g_playerLevel[client] = currentLevel;
 	if(bGrown) {
 		LevelUpMessage(client);
 
