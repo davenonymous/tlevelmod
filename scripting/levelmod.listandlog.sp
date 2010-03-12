@@ -1,29 +1,22 @@
 #include <sourcemod>
 #include <sdktools>
 #include <levelmod>
+#include <loghelper>
 
 public OnPluginStart()
 {
-	RegAdminCmd("clm_showlist", Command_ShowList, ADMFLAG_ROOT);
+	RegAdminCmd("sm_lm_showlist", Command_ShowList, ADMFLAG_KICK);
+}
+
+public OnMapStart()
+{
+	GetTeams();
 }
 
 public lm_OnClientLevelUp(client, level)
 {
-	/*
-	//Always keep all clients on the same level (just an example)
-	LogMessage("%N leveled up to %i", client, level);
-	if(level > g_iMaxLevel) {
-		g_iMaxLevel = level;
-
-		for(new i = 1; i <= MaxClients; i++) {
-			if(IsClientConnected(i) && IsClientInGame(i) && i != client && lm_GetClientLevel(i) < level) {
-				lm_SetClientLevel(i, level);
-			}
-		}
-	}
-	*/
+	LogPlayerEvent(client, "triggered", "levelmod_levelup");
 }
-
 
 public Action:Command_ShowList(client, args)
 {

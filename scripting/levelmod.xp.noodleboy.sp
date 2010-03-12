@@ -3,11 +3,32 @@
 #include <levelmod>
 #include <colors>
 
+#pragma semicolon 1
+#define PLUGIN_VERSION "0.1.0"
+
 new Handle:g_hCvarExpOnkill;
 new g_iExpOnKill;
 
+////////////////////////
+//P L U G I N  I N F O//
+////////////////////////
+public Plugin:myinfo =
+{
+	name = "[TF2] Leveling Mod, XP, Kill + Damage",
+	author = "noodleboy347, Thrawn",
+	description = "A plugin for Leveling Mod, giving Experience for killing and dealing damage.",
+	version = PLUGIN_VERSION,
+	url = "http://thrawn.de"
+}
+
+//////////////////////////
+//P L U G I N  S T A R T//
+//////////////////////////
 public OnPluginStart()
 {
+	// V E R S I O N    C V A R //
+	CreateConVar("sm_lm_xp_noodleboy_version", PLUGIN_VERSION, "Version of the plugin", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+
 	g_hCvarExpOnkill = CreateConVar("sm_lm_exp_onkill", "15", "Experience to gain on kill", FCVAR_PLUGIN, true, 1.0);
 
 	HookConVarChange(g_hCvarExpOnkill, Cvar_Changed);
@@ -15,7 +36,6 @@ public OnPluginStart()
 	HookEvent("player_death", Event_Player_Death);
 	HookEvent("player_hurt", Event_Player_Hurt);
 }
-
 
 public OnConfigsExecuted()
 {
@@ -26,6 +46,10 @@ public Cvar_Changed(Handle:convar, const String:oldValue[], const String:newValu
 	OnConfigsExecuted();
 }
 
+
+//////////////////////////
+//E V E N T   H O O K S //
+//////////////////////////
 public Event_Player_Death(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(lm_IsEnabled())
@@ -44,7 +68,6 @@ public Event_Player_Death(Handle:event, const String:name[], bool:dontBroadcast)
 		}
 	}
 }
-
 
 public Event_Player_Hurt(Handle:event, const String:name[], bool:dontBroadcast)
 {

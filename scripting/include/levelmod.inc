@@ -49,12 +49,42 @@ native lm_SetClientXP(iClient, iXP);
  */
 native lm_GetClientXPNext(iClient);
 
-
+/**
+ * Gives Experience points to a client, automatically leveling up
+ *
+ * @param iClient		The client to give xp to
+ * @param iXP			Amount of XP to give
+ * @param iChannel		Hud-Channel to use (valid: 0 for primary, 1 for secondary)
+ */
 native lm_GiveXP(iClient, iXP, iChannel);
 
+
+/**
+ * Returns the amount of experience required to be a certain level 
+ *
+ * @param iLevel		Level to aquire
+ * @return			amount of xp needed
+ */
 native lm_GetXpRequiredForLevel(iLevel);
 
+/**
+ * Returns the maximum level a player can get
+ *
+ * @return			the maximum level a player can get
+ */
 native lm_GetLevelMax();
+
+/**
+ * Returns True if levelmod is enabled
+ *
+ * @return			is levelmod enabled?
+ */
 native bool:lm_IsEnabled();
 
+/**
+ * Forwards when a client levels up
+ *
+ * @param iClient		The client who achieved a new level
+ * @param iLevel		The level the client achieved
+ */
 forward lm_OnClientLevelUp(iClient,iLevel);

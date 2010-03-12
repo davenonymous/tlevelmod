@@ -1,6 +1,3 @@
-//////////////////////////
-//G L O B A L  S T U F F//
-//////////////////////////
 #include <sourcemod>
 #include <sdktools>
 #include <colors>
@@ -8,8 +5,7 @@
 #pragma semicolon 1
 
 #define SOUND_LEVELUP "ui/item_acquired.wav"
-
-#define PLUGIN_VERSION "0.1.1"
+#define PLUGIN_VERSION "0.1.2"
 
 new g_playerLevel[MAXPLAYERS+1];
 new g_playerExp[MAXPLAYERS+1];
@@ -51,6 +47,9 @@ public Plugin:myinfo =
 //////////////////////////
 public OnPluginStart()
 {
+	// V E R S I O N    C V A R //
+	CreateConVar("sm_lm_version", PLUGIN_VERSION, "Version of the plugin", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+
 	// G A M E  C H E C K //
 	decl String:game[32];
 	GetGameFolderName(game, sizeof(game));
@@ -66,8 +65,6 @@ public OnPluginStart()
 
 	g_hCvarExp_ReqBase = CreateConVar("sm_lm_exp_reqbase", "500", "Experience required for the first level", FCVAR_PLUGIN, true, 1.0);
 	g_hCvarExp_ReqMulti = CreateConVar("sm_lm_exp_reqmulti", "1.4", "Experience required grows by this multiplier every level", FCVAR_PLUGIN, true, 1.0);
-
-	CreateConVar("sm_lm_version", PLUGIN_VERSION, "Version of the plugin", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 
 	HookConVarChange(g_hCvarEnable, Cvar_Changed);
 	HookConVarChange(g_hCvarLevel_default, Cvar_Changed);
@@ -164,6 +161,39 @@ public Action:Timer_DrawHud(Handle:timer, any:client)
 	return Plugin_Handled;
 }
 
+stock LevelUpMessage(client) {
+	SetHudTextParams(0.22, 0.90, 5.0, 100, 255, 100, 150, 2);
+	ShowSyncHudText(client, g_hHudLevelUp, "LEVEL UP!");
+}
+
+////////////////////
+//C O M M A N D S //
+////////////////////
+public Action:Command_SetLevel(client, args)
+{
+	new String:arg1[64];
+	GetCmdArg(1, arg1, sizeof(arg1));
+
+	new newLevel = StringToInt(arg1);
+
+	SetLevel(client, newLevel);
+	return Plugin_Handled;
+}
+
+///////////////////////
+//D I S C O N N E C T//
+///////////////////////
+public OnClientDisconnect(client)
+{
+	if(g_bEnabled)
+	{
+		CloseHandle(Handle:g_hLevelHUD[client]);
+	}
+}
+
+///////////////
+//S T O C K S//
+///////////////
 stock CheckAndLevelUp(client) {
 	new bool:bGrown = false;
 	while(g_playerExp[client] >= g_playerExpNext[client] && g_playerLevel[client] < g_iLevelMax)
@@ -198,39 +228,6 @@ stock AddLevels(client, levels = 1)
 	} else {
 		g_playerExp[client] = GetMinXPForLevel(g_playerLevel[client] + levels);
 	}
-}
-
-////////////////////
-//S E T  L E V E L//
-////////////////////
-public Action:Command_SetLevel(client, args)
-{
-	new String:arg1[64];
-	GetCmdArg(1, arg1, sizeof(arg1));
-
-	new newLevel = StringToInt(arg1);
-
-	SetLevel(client, newLevel);
-	return Plugin_Handled;
-}
-
-///////////////////////
-//D I S C O N N E C T//
-///////////////////////
-public OnClientDisconnect(client)
-{
-	if(g_bEnabled)
-	{
-		CloseHandle(Handle:g_hLevelHUD[client]);
-	}
-}
-
-///////////////
-//S T O C K S//
-///////////////
-stock LevelUpMessage(client) {
-	SetHudTextParams(0.22, 0.90, 5.0, 100, 255, 100, 150, 2);
-	ShowSyncHudText(client, g_hHudLevelUp, "LEVEL UP!");
 }
 
 stock SetLevel(client, level) {
@@ -318,6 +315,7 @@ public Native_SetClientXP(Handle:hPlugin, iNumParams)
 	g_playerExp[iClient] = iXP;
 }
 
+//lm_GiveXP(iClient, iXP, iChannel);
 public Native_GiveXP(Handle:hPlugin, iNumParams)
 {
 	new iClient = GetNativeCell(1);
@@ -338,16 +336,19 @@ public Native_GetClientXPNext(Handle:hPlugin, iNumParams)
 	return g_playerExpNext[iClient];
 }
 
+//lm_GetLevelMax();
 public Native_GetLevelMax(Handle:hPlugin, iNumParams)
 {
 	return g_iLevelMax;
 }
 
+//lm_IsEnabled();
 public Native_GetEnabled(Handle:hPlugin, iNumParams)
 {
 	return g_bEnabled;
 }
 
+//lm_GetClientXPForLevel(iLevel);
 public Native_GetClientXPForLevel(Handle:hPlugin, iNumParams)
 {
 	new iLevel = GetNativeCell(1);
@@ -355,6 +356,7 @@ public Native_GetClientXPForLevel(Handle:hPlugin, iNumParams)
 	return GetMinXPForLevel(iLevel);
 }
 
+//public lm_OnClientLevelUp(iClient, iLevel) {};
 public Forward_LevelUp(client, level)
 {
 	Call_StartForward(g_hForwardLevelUp);
