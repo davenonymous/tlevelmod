@@ -17,9 +17,9 @@ new bool:g_bDeathMessage;
 ////////////////////////
 public Plugin:myinfo =
 {
-	name = "Leveling Mod, XP, Kill + Damage",
-	author = "noodleboy347, Thrawn",
-	description = "A plugin for Leveling Mod, giving Experience for killing and dealing damage.",
+	name = "Leveling Mod, XP, Kill",
+	author = "Thrawn",
+	description = "A plugin for Leveling Mod, giving Experience for killing.",
 	version = PLUGIN_VERSION,
 	url = "http://thrawn.de"
 }
@@ -38,7 +38,6 @@ public OnPluginStart()
 	HookConVarChange(g_hCvarExpOnkill, Cvar_Changed);
 
 	HookEvent("player_death", Event_Player_Death);
-	HookEvent("player_hurt", Event_Player_Hurt);
 }
 
 public OnConfigsExecuted()
@@ -68,26 +67,6 @@ public Event_Player_Death(Handle:event, const String:name[], bool:dontBroadcast)
 
 			if(g_bDeathMessage)
 				CPrintToChatEx(victim, attacker, "You were killed by {teamcolor}%N {green}(Level %i)", attacker, lm_GetClientLevel(attacker));
-		}
-	}
-}
-
-public Event_Player_Hurt(Handle:event, const String:name[], bool:dontBroadcast)
-{
-	if(lm_IsEnabled())
-	{
-		new victim = GetClientOfUserId(GetEventInt(event, "userid"));
-		new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
-
-		new rawDamage = (GetEventInt(event, "damageamount"));
-		new damage = (rawDamage / 10);
-
-		if(damage > 0 && IsPlayerAlive(attacker) && attacker != victim && lm_GetClientLevel(attacker) < lm_GetLevelMax())
-		{
-			if(damage > lm_GetClientXPNext(attacker))
-				damage = lm_GetClientXPNext(attacker);
-
-			lm_GiveXP(attacker, damage, 0);
 		}
 	}
 }
