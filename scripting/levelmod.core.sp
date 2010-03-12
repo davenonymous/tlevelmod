@@ -25,6 +25,7 @@ new Handle:g_hCvarEnable;
 new Handle:g_hCvarLevel_default;
 new Handle:g_hCvarLevel_max;
 new Handle:g_hForwardLevelUp;
+new Handle:g_hForwardXPGained;
 new Handle:g_hCvarExp_ReqBase;
 new Handle:g_hCvarExp_ReqMulti;
 
@@ -81,6 +82,7 @@ public OnPluginStart()
 
 	// F O R W A R D S //
 	g_hForwardLevelUp = CreateGlobalForward("lm_OnClientLevelUp", ET_Ignore, Param_Cell, Param_Cell);
+	g_hForwardXPGained = CreateGlobalForward("lm_OnClientExperience", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
 
 	// C O M M A N D S //
 	RegAdminCmd("sm_lm_setmylevel", Command_SetLevel, ADMFLAG_ROOT);
@@ -209,7 +211,7 @@ public Action:Command_GiveXP(client, args)
 
 	new newLevel = StringToInt(arg1);
 
-	GiveXP(client, newLevel, g_hHudPlus1);
+	GiveXP(client, newLevel, 0);
 
 	return Plugin_Handled;
 }
@@ -271,27 +273,30 @@ stock AddLevels(client, levels = 1)
 }
 
 stock SetLevel(client, level) {
-	PrintToChat(client, "Setting your level to: %i", level);
-	PrintToChat(client, "Setting your xp to: %i", GetMinXPForLevel(level));
-	PrintToChat(client, "Setting your xpNext to: %i", GetMinXPForLevel(level+1));
-
 	g_playerExp[client] = GetMinXPForLevel(level);
 	g_playerExpNext[client] = GetMinXPForLevel(level+1);
 	g_playerLevel[client] = level;
 }
 
-//Calculate the xp one would need for a certain level
 stock GetMinXPForLevel(level) {
 	return g_iXPForLevel[level];
-	//return g_iExpReqBase * RoundFloat((g_fExpReqMult * level)^2);
 }
 
-stock GiveXP(client, amount, Handle:channel)
+stock GiveXP(client, amount, iChannel)
 {
 	g_playerExp[client] += amount;
+	Forward_XPGained(client, amount, iChannel);
 
-	SetHudTextParams(0.28, 0.93, 1.0, 255, 100, 100, 150, 1);
-	ShowSyncHudText(client, channel, "+%i", amount);
+	if(iChannel == 0) {
+		SetHudTextParams(0.24, 0.93, 1.0, 255, 100, 100, 150, 1);
+		ShowSyncHudText(client, g_hHudPlus1, "+%i", amount);
+	} else {
+		SetHudTextParams(0.28, 0.93, 1.0, 255, 100, 100, 150, 1);
+		ShowSyncHudText(client, g_hHudPlus2, "+%i", amount);
+	}
+
+
+
 }
 
 /////////////////
@@ -307,13 +312,19 @@ stock GiveXP(client, amount, Handle:channel)
 
 	CreateNative("lm_GetClientXP", Native_GetClientXP);
 	CreateNative("lm_SetClientXP", Native_SetClientXP);
+	CreateNative("lm_GiveXP", Native_GiveXP);
+
 	CreateNative("lm_GetClientLevel", Native_GetClientLevel);
 	CreateNative("lm_SetClientLevel", Native_SetClientLevel);
+	CreateNative("lm_GiveLevel", Native_GiveLevel);
+
 	CreateNative("lm_GetClientXPNext", Native_GetClientXPNext);
 	CreateNative("lm_GetXpRequiredForLevel", Native_GetClientXPForLevel);
-	CreateNative("lm_IsEnabled", Native_GetEnabled);
 	CreateNative("lm_GetLevelMax", Native_GetLevelMax);
-	CreateNative("lm_GiveXP", Native_GiveXP);
+
+	CreateNative("lm_IsEnabled", Native_GetEnabled);
+
+
 
 
 
@@ -367,10 +378,16 @@ public Native_GiveXP(Handle:hPlugin, iNumParams)
 	new iXP = GetNativeCell(2);
 	new iChannel = GetNativeCell(3);
 
-	if(iChannel == 0)
-		GiveXP(iClient, iXP, g_hHudPlus1);
-	else
-		GiveXP(iClient, iXP, g_hHudPlus2);
+	GiveXP(iClient, iXP, iChannel);
+}
+
+//lm_GiveLevel(iClient, iLevels);
+public Native_GiveLevel(Handle:hPlugin, iNumParams)
+{
+	new iClient = GetNativeCell(1);
+	new iLevels = GetNativeCell(2);
+
+	AddLevels(iClient, iLevels);
 }
 
 //lm_GetClientXPNext(iClient);
@@ -407,5 +424,16 @@ public Forward_LevelUp(client, level)
 	Call_StartForward(g_hForwardLevelUp);
 	Call_PushCell(client);
 	Call_PushCell(level);
+	Call_Finish();
+}
+
+
+//public lm_OnClientExperience(iClient, iXP, iChannel) {};
+public Forward_XPGained(client, xp, channel)
+{
+	Call_StartForward(g_hForwardXPGained);
+	Call_PushCell(client);
+	Call_PushCell(xp);
+	Call_PushCell(channel);
 	Call_Finish();
 }

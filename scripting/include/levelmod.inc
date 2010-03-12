@@ -58,6 +58,13 @@ native lm_GetClientXPNext(iClient);
  */
 native lm_GiveXP(iClient, iXP, iChannel);
 
+/**
+ * Gives levels to a client (shows level up notification)
+ *
+ * @param iClient		The client to give levels to
+ * @param iLevels		Amount of levels to give the client
+ */
+native lm_GiveLevel(iClient, iLevel);
 
 /**
  * Returns the amount of experience required to be a certain level 
@@ -88,3 +95,12 @@ native bool:lm_IsEnabled();
  * @param iLevel		The level the client achieved
  */
 forward lm_OnClientLevelUp(iClient,iLevel);
+
+/**
+ * Forwards when a client gains experience
+ *
+ * @param iClient		The client who gained experience points
+ * @param iXP			The amount of xp the client got
+ * @param iChannel		Hud-Channel being used (valid: 0 for primary, 1 for secondary)
+ */
+forward lm_OnClientExperience(iClient,iXP,iChannel);
