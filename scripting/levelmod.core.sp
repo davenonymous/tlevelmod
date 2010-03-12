@@ -129,8 +129,8 @@ public OnClientPostAdminCheck(client)
 /////////////////////////////
 public Action:Timer_Advertisement(Handle:timer, any:client)
 {
-	if(g_bEnabled)
-		CPrintToChat(client, "This server is running {blue}Leveling Mod{default}.");
+	g_hTimerAdvertisement[client] = INVALID_HANDLE;
+	CPrintToChat(client, "This server is running {blue}Leveling Mod{default}.");
 }
 
 ////////////////////
@@ -219,6 +219,7 @@ stock SetLevel(client, level) {
 stock GetMinXPForLevel(level) {
 	return g_iXPForLevel[level];
 }
+
 
 stock GiveXP(client, amount, iChannel)
 {

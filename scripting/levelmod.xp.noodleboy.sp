@@ -8,7 +8,9 @@
 
 
 new Handle:g_hCvarExpOnkill;
+new Handle:g_hCvarDeathMessage;
 new g_iExpOnKill;
+new bool:g_bDeathMessage;
 
 ////////////////////////
 //P L U G I N  I N F O//
@@ -31,6 +33,7 @@ public OnPluginStart()
 	CreateConVar("sm_lm_xp_noodleboy_version", PLUGIN_VERSION, "Version of the plugin", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 
 	g_hCvarExpOnkill = CreateConVar("sm_lm_exp_onkill", "10", "Experience to gain on kill", FCVAR_PLUGIN, true, 1.0);
+	g_hCvarDeathMessage = CreateConVar("sm_lm_deathmessage", "1", "Show who killed you with which level on death", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
 	HookConVarChange(g_hCvarExpOnkill, Cvar_Changed);
 
@@ -41,6 +44,7 @@ public OnPluginStart()
 public OnConfigsExecuted()
 {
 	g_iExpOnKill = GetConVarInt(g_hCvarExpOnkill);
+	g_bDeathMessage = GetConVarBool(g_hCvarDeathMessage);
 }
 
 public Cvar_Changed(Handle:convar, const String:oldValue[], const String:newValue[]) {
@@ -60,12 +64,10 @@ public Event_Player_Death(Handle:event, const String:name[], bool:dontBroadcast)
 
 		if(attacker != victim)
 		{
-			new attackerLevel = lm_GetClientLevel(attacker);
-			if(attackerLevel < lm_GetLevelMax())
-				lm_GiveXP(attacker, g_iExpOnKill, 1);
+			lm_GiveXP(attacker, g_iExpOnKill, 1);
 
-			// FIXME: Cvar for death message
-			CPrintToChatEx(victim, attacker, "You were killed by {teamcolor}%N {green}(Level %i)", attacker, attackerLevel);
+			if(g_bDeathMessage)
+				CPrintToChatEx(victim, attacker, "You were killed by {teamcolor}%N {green}(Level %i)", attacker, lm_GetClientLevel(attacker));
 		}
 	}
 }
