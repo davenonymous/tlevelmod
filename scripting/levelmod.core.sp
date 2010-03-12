@@ -12,14 +12,8 @@
 new g_playerLevel[MAXPLAYERS+1];
 new g_playerExp[MAXPLAYERS+1];
 new g_playerExpNext[MAXPLAYERS+1];
-new Handle:g_hLevelHUD[MAXPLAYERS+1] = INVALID_HANDLE;
-new Handle:g_hTimerAdvertisement[MAXPLAYERS+1] = INVALID_HANDLE;
 
-new Handle:g_hHudLevel;
-new Handle:g_hHudExp;
-new Handle:g_hHudPlus1;
-new Handle:g_hHudPlus2;
-new Handle:g_hHudLevelUp;
+new Handle:g_hTimerAdvertisement[MAXPLAYERS+1] = INVALID_HANDLE;
 
 new Handle:g_hCvarEnable;
 new Handle:g_hCvarLevel_default;
@@ -42,7 +36,7 @@ new Float:g_fExpReqMult;
 ////////////////////////
 public Plugin:myinfo =
 {
-	name = "[TF2] Leveling Core",
+	name = "Leveling Core",
 	author = "noodleboy347, Thrawn",
 	description = "A RPG-like leveling core to be used by other plugins",
 	version = PLUGIN_VERSION,
@@ -88,13 +82,6 @@ public OnPluginStart()
 	RegAdminCmd("sm_lm_setmylevel", Command_SetLevel, ADMFLAG_ROOT);
 	RegAdminCmd("sm_lm_givexp", Command_GiveXP, ADMFLAG_ROOT);
 
-	// O T H E R //
-	g_hHudLevel = CreateHudSynchronizer();
-	g_hHudExp = CreateHudSynchronizer();
-	g_hHudPlus1 = CreateHudSynchronizer();
-	g_hHudPlus2 = CreateHudSynchronizer();
-	g_hHudLevelUp = CreateHudSynchronizer();
-
 	PrecacheSound(SOUND_LEVELUP, true);
 }
 
@@ -118,12 +105,8 @@ stock FillXPForLevel() {
 	g_iXPForLevel[0] = 0;
 	g_iXPForLevel[1] = g_iExpReqBase;
 
-	//LogMessage("Level %i: %i", 0, 0);
-	//LogMessage("Level %i: %i", 1, g_iExpReqBase);
-
 	for(new level=2; level < MAXLEVELS; level++) {
 		g_iXPForLevel[level] = g_iXPForLevel[level-1] + RoundFloat(g_iExpReqBase*level*g_fExpReqMult);
-		//LogMessage("Level %i: %i", level, g_iXPForLevel[level]);
 	}
 }
 //////////////////////////////////
@@ -137,7 +120,6 @@ public OnClientPostAdminCheck(client)
 		g_playerExp[client] = GetMinXPForLevel(g_iLevelDefault);
 		g_playerExpNext[client] = GetMinXPForLevel(g_iLevelDefault+1);
 
-		g_hLevelHUD[client] = CreateTimer(5.0, Timer_DrawHud, client);
 		g_hTimerAdvertisement[client] = CreateTimer(60.0, Timer_Advertisement, client);
 	}
 }
@@ -149,45 +131,6 @@ public Action:Timer_Advertisement(Handle:timer, any:client)
 {
 	if(g_bEnabled)
 		CPrintToChat(client, "This server is running {blue}Leveling Mod{default}.");
-}
-
-///////////////////
-//D R A W  H U D //
-///////////////////
-public Action:Timer_DrawHud(Handle:timer, any:client)
-{
-	if(IsClientInGame(client))
-	{
-		CheckAndLevelUp(client);
-
-		SetHudTextParams(0.14, 0.90, 2.0, 100, 200, 255, 150);
-		ShowSyncHudText(client, g_hHudLevel, "Level: %i", g_playerLevel[client]);
-
-		SetHudTextParams(0.14, 0.93, 2.0, 255, 200, 100, 150);
-
-		if(g_playerLevel[client] >= g_iLevelMax)
-		{
-			ShowSyncHudText(client, g_hHudExp, "EXP: MAX LEVEL REACHED", g_playerExp[client], g_playerExpNext[client]);
-		}
-		else
-		{
-			new iCurrent = g_playerExp[client];
-			new iNextLevel = GetMinXPForLevel(g_playerLevel[client]+1);
-			new iThisLevel = GetMinXPForLevel(g_playerLevel[client]);
-			new iRequired = iNextLevel - iThisLevel;
-			new iAchieved = iCurrent - iThisLevel;
-
-			ShowSyncHudText(client, g_hHudExp, "EXP: %i/%i", iAchieved, iRequired);
-		}
-	}
-
-	g_hLevelHUD[client] = CreateTimer(1.9, Timer_DrawHud, client);
-	return Plugin_Handled;
-}
-
-stock LevelUpMessage(client) {
-	SetHudTextParams(0.22, 0.90, 5.0, 100, 255, 100, 150, 2);
-	ShowSyncHudText(client, g_hHudLevelUp, "LEVEL UP!");
 }
 
 ////////////////////
@@ -224,9 +167,6 @@ public OnClientDisconnect(client)
 {
 	if(g_bEnabled)
 	{
-		if(g_hLevelHUD[client]!=INVALID_HANDLE)
-			CloseHandle(g_hLevelHUD[client]);
-
 		if(g_hTimerAdvertisement[client]!=INVALID_HANDLE)
 			CloseHandle(g_hTimerAdvertisement[client]);
 	}
@@ -251,8 +191,6 @@ stock CheckAndLevelUp(client) {
 	}
 
 	if(bGrown) {
-		LevelUpMessage(client);
-
 		CPrintToChatAllEx(client, "{teamcolor}%N{default} has grown to: {green}Level %i", client, g_playerLevel[client]);
 		EmitSoundToClient(client, SOUND_LEVELUP);
 
@@ -286,17 +224,6 @@ stock GiveXP(client, amount, iChannel)
 {
 	g_playerExp[client] += amount;
 	Forward_XPGained(client, amount, iChannel);
-
-	if(iChannel == 0) {
-		SetHudTextParams(0.24, 0.93, 1.0, 255, 100, 100, 150, 1);
-		ShowSyncHudText(client, g_hHudPlus1, "+%i", amount);
-	} else {
-		SetHudTextParams(0.28, 0.93, 1.0, 255, 100, 100, 150, 1);
-		ShowSyncHudText(client, g_hHudPlus2, "+%i", amount);
-	}
-
-
-
 }
 
 /////////////////

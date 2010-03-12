@@ -15,7 +15,7 @@ new g_iExpOnKill;
 ////////////////////////
 public Plugin:myinfo =
 {
-	name = "[TF2] Leveling Mod, XP, Kill + Damage",
+	name = "Leveling Mod, XP, Kill + Damage",
 	author = "noodleboy347, Thrawn",
 	description = "A plugin for Leveling Mod, giving Experience for killing and dealing damage.",
 	version = PLUGIN_VERSION,

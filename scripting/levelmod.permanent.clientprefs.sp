@@ -16,7 +16,7 @@ new bool:g_bValuesLoaded[MAXPLAYERS+1] = {false,...};
 ////////////////////////
 public Plugin:myinfo =
 {
-	name = "[TF2] Leveling Mod, Permanent (clientprefs)",
+	name = "Leveling Mod, Permanent (clientprefs)",
 	author = "Thrawn",
 	description = "A plugin for Leveling Mod, saves XP and Level to the clientprefs db.",
 	version = PLUGIN_VERSION,

@@ -11,7 +11,7 @@
 ////////////////////////
 public Plugin:myinfo =
 {
-	name = "[TF2] Leveling Mod, List+Log",
+	name = "Leveling Mod, List+Log",
 	author = "Thrawn",
 	description = "A plugin for Leveling Mod, shows a list to admins and logs every levelup.",
 	version = PLUGIN_VERSION,
