@@ -6,6 +6,8 @@
 
 #define SOUND_LEVELUP "ui/item_acquired.wav"
 #define PLUGIN_VERSION "0.1.2"
+#define MAXLEVELS 200
+#define FMAXLEVELS 200.0
 
 new g_playerLevel[MAXPLAYERS+1];
 new g_playerExp[MAXPLAYERS+1];
@@ -25,6 +27,7 @@ new Handle:g_hCvarExp_ReqBase;
 new Handle:g_hCvarExp_ReqMulti;
 
 new bool:g_bEnabled;
+new g_iXPForLevel[MAXLEVELS];
 new g_iLevelDefault;
 new g_iLevelMax;
 new g_iExpReqBase;
@@ -60,11 +63,11 @@ public OnPluginStart()
 
 	// C O N V A R S //
 	g_hCvarEnable = CreateConVar("sm_lm_enabled", "1", "Enables the plugin", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	g_hCvarLevel_default = CreateConVar("sm_lm_level_default", "1", "Default level for players when they join", FCVAR_PLUGIN, true, 1.0);
-	g_hCvarLevel_max = CreateConVar("sm_lm_level_max", "100", "Maxmimum level players can reach", FCVAR_PLUGIN, true, 1.0, true, 250.0);
+	g_hCvarLevel_default = CreateConVar("sm_lm_level_default", "0", "Default level for players when they join", FCVAR_PLUGIN, true, 1.0);
+	g_hCvarLevel_max = CreateConVar("sm_lm_level_max", "100", "Maxmimum level players can reach", FCVAR_PLUGIN, true, 1.0, true, FMAXLEVELS);
 
-	g_hCvarExp_ReqBase = CreateConVar("sm_lm_exp_reqbase", "500", "Experience required for the first level", FCVAR_PLUGIN, true, 1.0);
-	g_hCvarExp_ReqMulti = CreateConVar("sm_lm_exp_reqmulti", "1.4", "Experience required grows by this multiplier every level", FCVAR_PLUGIN, true, 1.0);
+	g_hCvarExp_ReqBase = CreateConVar("sm_lm_exp_reqbase", "100", "Experience required for the first level", FCVAR_PLUGIN, true, 1.0);
+	g_hCvarExp_ReqMulti = CreateConVar("sm_lm_exp_reqmulti", "1.0", "Experience required grows by this multiplier every level", FCVAR_PLUGIN, true, 1.0);
 
 	HookConVarChange(g_hCvarEnable, Cvar_Changed);
 	HookConVarChange(g_hCvarLevel_default, Cvar_Changed);
@@ -78,6 +81,7 @@ public OnPluginStart()
 
 	// C O M M A N D S //
 	RegAdminCmd("sm_lm_setmylevel", Command_SetLevel, ADMFLAG_ROOT);
+	RegAdminCmd("sm_lm_givexp", Command_GiveXP, ADMFLAG_ROOT);
 
 	// O T H E R //
 	g_hHudLevel = CreateHudSynchronizer();
@@ -87,8 +91,6 @@ public OnPluginStart()
 	g_hHudLevelUp = CreateHudSynchronizer();
 
 	PrecacheSound(SOUND_LEVELUP, true);
-
-	AutoExecConfig(true, "plugins.levelmod");
 }
 
 public OnConfigsExecuted()
@@ -99,12 +101,26 @@ public OnConfigsExecuted()
 
 	g_iExpReqBase = GetConVarInt(g_hCvarExp_ReqBase);
 	g_fExpReqMult = GetConVarFloat(g_hCvarExp_ReqMulti);
+
+	FillXPForLevel();
 }
 
 public Cvar_Changed(Handle:convar, const String:oldValue[], const String:newValue[]) {
 	OnConfigsExecuted();
 }
 
+stock FillXPForLevel() {
+	g_iXPForLevel[0] = 0;
+	g_iXPForLevel[1] = g_iExpReqBase;
+
+	LogMessage("Level %i: %i", 0, 0);
+	LogMessage("Level %i: %i", 1, g_iExpReqBase);
+
+	for(new level=2; level < MAXLEVELS; level++) {
+		g_iXPForLevel[level] = g_iXPForLevel[level-1] + RoundFloat(g_iExpReqBase*level*g_fExpReqMult);
+		//LogMessage("Level %i: %i", level, g_iXPForLevel[level]);
+	}
+}
 //////////////////////////////////
 //C L I E N T  C O N N E C T E D//
 //////////////////////////////////
@@ -113,8 +129,8 @@ public OnClientPostAdminCheck(client)
 	if(g_bEnabled)
 	{
 		g_playerLevel[client] = g_iLevelDefault;
-		g_playerExp[client] = 0;
-		g_playerExpNext[client] = g_iExpReqBase;
+		g_playerExp[client] = GetMinXPForLevel(g_iLevelDefault);
+		g_playerExpNext[client] = GetMinXPForLevel(g_iLevelDefault+1);
 
 		g_hLevelHUD[client] = CreateTimer(5.0, Timer_DrawHud, client);
 		CreateTimer(60.0, Timer_Advertisement, client);
@@ -150,10 +166,13 @@ public Action:Timer_DrawHud(Handle:timer, any:client)
 		}
 		else
 		{
-			new iCurrent = g_playerExp[client] - GetMinXPForLevel(g_playerLevel[client]);
-			new iNext = GetMinXPForLevel(g_playerLevel[client]+1) - GetMinXPForLevel(g_playerLevel[client]);
+			new iCurrent = g_playerExp[client];
+			new iNextLevel = GetMinXPForLevel(g_playerLevel[client]+1);
+			new iThisLevel = GetMinXPForLevel(g_playerLevel[client]);
+			new iRequired = iNextLevel - iThisLevel;
+			new iAchieved = iCurrent - iThisLevel;
 
-			ShowSyncHudText(client, g_hHudExp, "EXP: %i/%i", iCurrent, iNext);
+			ShowSyncHudText(client, g_hHudExp, "EXP: %i/%i", iAchieved, iRequired);
 		}
 	}
 
@@ -180,6 +199,19 @@ public Action:Command_SetLevel(client, args)
 	return Plugin_Handled;
 }
 
+public Action:Command_GiveXP(client, args)
+{
+	new String:arg1[64];
+	GetCmdArg(1, arg1, sizeof(arg1));
+
+	new newLevel = StringToInt(arg1);
+
+	GiveXP(client, newLevel, g_hHudPlus1);
+
+	return Plugin_Handled;
+}
+
+
 ///////////////////////
 //D I S C O N N E C T//
 ///////////////////////
@@ -196,18 +228,21 @@ public OnClientDisconnect(client)
 ///////////////
 stock CheckAndLevelUp(client) {
 	new bool:bGrown = false;
-	while(g_playerExp[client] >= g_playerExpNext[client] && g_playerLevel[client] < g_iLevelMax)
+	new currentLevel = g_playerLevel[client];
+	if(g_playerExp[client] >= g_playerExpNext[client] && g_playerLevel[client] < g_iLevelMax)
 	{
-		g_playerLevel[client]++;
-		g_playerExpNext[client] = GetMinXPForLevel(g_playerLevel[client]);
+		LogMessage("Player is not level %i anymore", currentLevel);
+
+		currentLevel++;
+		g_playerExpNext[client] = GetMinXPForLevel(currentLevel);
 
 		bGrown = true;
 		if(g_playerLevel[client] == g_iLevelMax) {
 			g_playerExpNext[client] = -1;
-			break;
 		}
 	}
 
+	g_playerLevel[client] = currentLevel;
 	if(bGrown) {
 		LevelUpMessage(client);
 
@@ -231,14 +266,19 @@ stock AddLevels(client, levels = 1)
 }
 
 stock SetLevel(client, level) {
-	g_playerLevel[client] = level;
+	PrintToChat(client, "Setting your level to: %i", level);
+	PrintToChat(client, "Setting your xp to: %i", GetMinXPForLevel(level));
+	PrintToChat(client, "Setting your xpNext to: %i", GetMinXPForLevel(level+1));
+
 	g_playerExp[client] = GetMinXPForLevel(level);
 	g_playerExpNext[client] = GetMinXPForLevel(level+1);
+	g_playerLevel[client] = level;
 }
 
 //Calculate the xp one would need for a certain level
 stock GetMinXPForLevel(level) {
-	return g_iExpReqBase * (RoundFloat(g_fExpReqMult^Float:(level-1)));
+	return g_iXPForLevel[level];
+	//return g_iExpReqBase * RoundFloat((g_fExpReqMult * level)^2);
 }
 
 stock GiveXP(client, amount, Handle:channel)
@@ -265,7 +305,7 @@ stock GiveXP(client, amount, Handle:channel)
 	CreateNative("lm_GetClientLevel", Native_GetClientLevel);
 	CreateNative("lm_SetClientLevel", Native_SetClientLevel);
 	CreateNative("lm_GetClientXPNext", Native_GetClientXPNext);
-	CreateNative("lm_GetRequiredXpForLevel", Native_GetClientXPForLevel);
+	CreateNative("lm_GetXpRequiredForLevel", Native_GetClientXPForLevel);
 	CreateNative("lm_IsEnabled", Native_GetEnabled);
 	CreateNative("lm_GetLevelMax", Native_GetLevelMax);
 	CreateNative("lm_GiveXP", Native_GiveXP);

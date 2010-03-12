@@ -3,6 +3,21 @@
 #include <levelmod>
 #include <loghelper>
 
+#pragma semicolon 1
+#define PLUGIN_VERSION "0.1.0"
+
+////////////////////////
+//P L U G I N  I N F O//
+////////////////////////
+public Plugin:myinfo =
+{
+	name = "[TF2] Leveling Mod, List+Log",
+	author = "Thrawn",
+	description = "A plugin for Leveling Mod, shows a list to admins and logs every levelup.",
+	version = PLUGIN_VERSION,
+	url = "http://thrawn.de"
+}
+
 public OnPluginStart()
 {
 	RegAdminCmd("sm_lm_showlist", Command_ShowList, ADMFLAG_KICK);

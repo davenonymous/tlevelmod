@@ -53,7 +53,7 @@ stock loadValues(client) {
 	GetClientCookie(client, db_level, sLevel, sizeof(sLevel));
 	new iLevel = StringToInt(sLevel);
 
-	if(iLevel > 0) {
+	if(iLevel >= 0) {
 		lm_SetClientLevel(client, iLevel);
 		LogMessage("DB: %N is level %i", client, iLevel);
 	}
@@ -62,7 +62,7 @@ stock loadValues(client) {
 	GetClientCookie(client, db_xp, sXP, sizeof(sXP));
 	new iXP = StringToInt(sXP);
 
-	if(iXP > 0) {
+	if(iXP >= 0) {
 		lm_SetClientXP(client, iXP);
 		LogMessage("DB: %N has xp: %i", client, iXP);
 	}
@@ -79,13 +79,14 @@ public OnClientDisconnect(client)
 	new iXP = lm_GetClientXP(client);
 	new iLevel = lm_GetClientLevel(client);
 
-	if(iLevel > 0) {
+	if(iLevel >= 0) {
 		new String:sXP[20];
 		Format(sXP, sizeof(sXP), "%i", iXP);
 
 		new String:sLevel[6];
 		Format(sLevel, sizeof(sLevel), "%i", iLevel);
 
+		LogMessage("Writing client cookie: level %i, xp: %i", iLevel, iXP);
 		SetClientCookie(client, db_level, sLevel);
 		SetClientCookie(client, db_xp, sXP);
 	}
