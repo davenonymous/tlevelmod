@@ -47,10 +47,10 @@ native lm_SetClientXP(iClient, iXP);
  * @param iClient		The client to get the value from
  * @return			client next level up xp requirements
  */
-native lm_GetClientXPMax(iClient);
+native lm_GetClientXPNext(iClient);
 
 
 
-
+native lm_GetXpRequiredForLevel(iLevel);
 
 forward lm_OnClientLevelUp(iClient,iLevel);
