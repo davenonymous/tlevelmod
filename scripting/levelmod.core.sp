@@ -43,7 +43,7 @@ public Plugin:myinfo =
 	author = "noodleboy347, Thrawn",
 	description = "A RPG-like leveling core to be used by other plugins",
 	version = PLUGIN_VERSION,
-	url = "http://www.frozencubes.com"
+	url = "http://thrawn.de"
 }
 
 //////////////////////////
@@ -130,7 +130,7 @@ public OnClientPostAdminCheck(client)
 public Action:Timer_Advertisement(Handle:timer, any:client)
 {
 	if(g_bEnabled)
-		CPrintToChat(client, "This server is running {blue}Cosmetic Leveling Mod{default}.");
+		CPrintToChat(client, "This server is running {blue}Leveling Mod{default}.");
 }
 
 ///////////////////
