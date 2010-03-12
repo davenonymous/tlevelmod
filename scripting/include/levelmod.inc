@@ -50,7 +50,11 @@ native lm_SetClientXP(iClient, iXP);
 native lm_GetClientXPNext(iClient);
 
 
+native lm_GiveXP(iClient, iXP, iChannel);
 
 native lm_GetXpRequiredForLevel(iLevel);
+
+native lm_GetLevelMax();
+native bool:lm_IsEnabled();
 
 forward lm_OnClientLevelUp(iClient,iLevel);

@@ -24,8 +24,6 @@ new Handle:g_hHudLevelUp;
 new Handle:g_hCvarEnable;
 new Handle:g_hCvarLevel_default;
 new Handle:g_hCvarLevel_max;
-new Handle:g_hCvarExp_levelup;
-new Handle:g_hCvarExp_onkill;
 new Handle:g_hForwardLevelUp;
 new Handle:g_hCvarExp_ReqBase;
 new Handle:g_hCvarExp_ReqMulti;
@@ -33,7 +31,6 @@ new Handle:g_hCvarExp_ReqMulti;
 new bool:g_bEnabled;
 new g_iLevelDefault;
 new g_iLevelMax;
-new g_iExpOnKill;
 new g_iExpReqBase;
 new Float:g_fExpReqMult;
 
@@ -67,9 +64,6 @@ public OnPluginStart()
 	g_hCvarLevel_default = CreateConVar("sm_lm_level_default", "1", "Default level for players when they join", FCVAR_PLUGIN, true, 1.0);
 	g_hCvarLevel_max = CreateConVar("sm_lm_level_max", "100", "Maxmimum level players can reach", FCVAR_PLUGIN, true, 1.0, true, 250.0);
 
-	g_hCvarExp_levelup = CreateConVar("sm_lm_exp_levelup", "20", "Experience increase on level up", FCVAR_PLUGIN, true, 1.0);
-	g_hCvarExp_onkill = CreateConVar("sm_lm_exp_onkill", "15", "Experience to gain on kill", FCVAR_PLUGIN, true, 1.0);
-
 	g_hCvarExp_ReqBase = CreateConVar("sm_lm_exp_reqbase", "500", "Experience required for the first level", FCVAR_PLUGIN, true, 1.0);
 	g_hCvarExp_ReqMulti = CreateConVar("sm_lm_exp_reqmulti", "1.4", "Experience required grows by this multiplier every level", FCVAR_PLUGIN, true, 1.0);
 
@@ -79,8 +73,6 @@ public OnPluginStart()
 	HookConVarChange(g_hCvarLevel_default, Cvar_Changed);
 	HookConVarChange(g_hCvarLevel_max, Cvar_Changed);
 
-	HookConVarChange(g_hCvarExp_levelup, Cvar_Changed);
-	HookConVarChange(g_hCvarExp_onkill, Cvar_Changed);
 	HookConVarChange(g_hCvarExp_ReqBase, Cvar_Changed);
 	HookConVarChange(g_hCvarExp_ReqMulti, Cvar_Changed);
 
@@ -89,10 +81,6 @@ public OnPluginStart()
 
 	// C O M M A N D S //
 	RegAdminCmd("sm_lm_setmylevel", Command_SetLevel, ADMFLAG_ROOT);
-
-	// H O O K S //
-	HookEvent("player_hurt", Event_Player_Hurt);
-	HookEvent("player_death", Event_Player_Death);
 
 	// O T H E R //
 	g_hHudLevel = CreateHudSynchronizer();
@@ -111,8 +99,6 @@ public OnConfigsExecuted()
 	g_bEnabled = GetConVarBool(g_hCvarEnable);
 	g_iLevelDefault = GetConVarInt(g_hCvarLevel_default);
 	g_iLevelMax = GetConVarInt(g_hCvarLevel_max);
-
-	g_iExpOnKill = GetConVarInt(g_hCvarExp_onkill);
 
 	g_iExpReqBase = GetConVarInt(g_hCvarExp_ReqBase);
 	g_fExpReqMult = GetConVarFloat(g_hCvarExp_ReqMulti);
@@ -214,50 +200,6 @@ stock AddLevels(client, levels = 1)
 	}
 }
 
-////////////////////////
-//D A M A G E  D O N E//
-////////////////////////
-public Event_Player_Hurt(Handle:event, const String:name[], bool:dontBroadcast)
-{
-	if(g_bEnabled)
-	{
-		new victim = GetClientOfUserId(GetEventInt(event, "userid"));
-		new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
-
-		new rawDamage = (GetEventInt(event, "damageamount"));
-		new damage = (rawDamage / 10);
-
-		if(damage > 0 && IsPlayerAlive(attacker) && attacker != victim && g_playerLevel[attacker] < g_iLevelMax)
-		{
-			if(damage > g_playerExpNext[attacker])
-				damage = g_playerExpNext[attacker];
-
-			GiveXP(attacker, damage, g_hHudPlus1);
-		}
-	}
-}
-
-////////////////////////////
-//P L A Y E R  K I L L E D//
-////////////////////////////
-public Event_Player_Death(Handle:event, const String:name[], bool:dontBroadcast)
-{
-	if(g_bEnabled)
-	{
-		new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
-		new victim = GetClientOfUserId(GetEventInt(event, "userid"));
-
-		if(attacker != victim)
-		{
-			if(g_playerLevel[attacker] < g_iLevelMax)
-				GiveXP(attacker, g_iExpOnKill, g_hHudPlus2);
-
-			// FIXME: Cvar for death message
-			CPrintToChatEx(victim, attacker, "You were killed by {teamcolor}%N {green}(Level %i)", attacker, g_playerLevel[attacker]);
-		}
-	}
-}
-
 ////////////////////
 //S E T  L E V E L//
 ////////////////////
@@ -327,6 +269,11 @@ stock GiveXP(client, amount, Handle:channel)
 	CreateNative("lm_SetClientLevel", Native_SetClientLevel);
 	CreateNative("lm_GetClientXPNext", Native_GetClientXPNext);
 	CreateNative("lm_GetRequiredXpForLevel", Native_GetClientXPForLevel);
+	CreateNative("lm_IsEnabled", Native_GetEnabled);
+	CreateNative("lm_GetLevelMax", Native_GetLevelMax);
+	CreateNative("lm_GiveXP", Native_GiveXP);
+
+
 
 	#if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 3
 		return APLRes_Success;
@@ -366,9 +313,21 @@ public Native_SetClientLevel(Handle:hPlugin, iNumParams)
 public Native_SetClientXP(Handle:hPlugin, iNumParams)
 {
 	new iClient = GetNativeCell(1);
-	new iXP = GetNativeCell(1);
+	new iXP = GetNativeCell(2);
 
 	g_playerExp[iClient] = iXP;
+}
+
+public Native_GiveXP(Handle:hPlugin, iNumParams)
+{
+	new iClient = GetNativeCell(1);
+	new iXP = GetNativeCell(2);
+	new iChannel = GetNativeCell(3);
+
+	if(iChannel == 0)
+		GiveXP(iClient, iXP, g_hHudPlus1);
+	else
+		GiveXP(iClient, iXP, g_hHudPlus2);
 }
 
 //lm_GetClientXPNext(iClient);
@@ -379,14 +338,22 @@ public Native_GetClientXPNext(Handle:hPlugin, iNumParams)
 	return g_playerExpNext[iClient];
 }
 
+public Native_GetLevelMax(Handle:hPlugin, iNumParams)
+{
+	return g_iLevelMax;
+}
+
+public Native_GetEnabled(Handle:hPlugin, iNumParams)
+{
+	return g_bEnabled;
+}
+
 public Native_GetClientXPForLevel(Handle:hPlugin, iNumParams)
 {
 	new iLevel = GetNativeCell(1);
 
 	return GetMinXPForLevel(iLevel);
 }
-
-
 
 public Forward_LevelUp(client, level)
 {
