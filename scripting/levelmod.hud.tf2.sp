@@ -147,12 +147,14 @@ public lm_OnClientLevelUp(client, level, amount)
 
 public lm_OnClientExperience(client, amount, iChannel)
 {
-	if(iChannel == 0) {
-		SetHudTextParams(0.30, 0.93, 1.0, 255, 100, 100, 150, 1);
-		ShowSyncHudText(client, g_hHudPlus1, "+%i", amount);
-	} else {
-		SetHudTextParams(0.34, 0.93, 1.0, 255, 100, 100, 150, 1);
-		ShowSyncHudText(client, g_hHudPlus2, "+%i", amount);
+	if(client > 0) {
+		if(iChannel == 0) {
+			SetHudTextParams(0.30, 0.93, 1.0, 255, 100, 100, 150, 1);
+			ShowSyncHudText(client, g_hHudPlus1, "+%i", amount);
+		} else {
+			SetHudTextParams(0.34, 0.93, 1.0, 255, 100, 100, 150, 1);
+			ShowSyncHudText(client, g_hHudPlus2, "+%i", amount);
+		}
 	}
 }
 
