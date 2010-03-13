@@ -27,17 +27,13 @@ public OnPluginStart()
 {
 	db_level = RegClientCookie("levelmod_level", "Current player level", CookieAccess_Private);
 	db_xp = RegClientCookie("levelmod_xp", "Current player experience points", CookieAccess_Private);
-
-	HookEvent("player_spawn",       Event_PlayerSpawn);
 }
 
 
 /////////////////////////
 //L O A D  F R O M  D B//
 /////////////////////////
-public Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
-
+public OnClientCookiesCached(client) {
 	loadValues(client);
 }
 

@@ -28,7 +28,7 @@ public OnMapStart()
 	GetTeams();
 }
 
-public lm_OnClientLevelUp(client, level)
+public lm_OnClientLevelUp(client, level, amount)
 {
 	LogPlayerEvent(client, "triggered", "levelmod_levelup");
 }

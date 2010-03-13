@@ -81,7 +81,7 @@ public OnPluginStart()
 	HookConVarChange(g_hCvarExp_ReqMulti, Cvar_Changed);
 
 	// F O R W A R D S //
-	g_hForwardLevelUp = CreateGlobalForward("lm_OnClientLevelUp", ET_Ignore, Param_Cell, Param_Cell);
+	g_hForwardLevelUp = CreateGlobalForward("lm_OnClientLevelUp", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
 	g_hForwardXPGained = CreateGlobalForward("lm_OnClientExperience", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
 }
 
@@ -114,15 +114,21 @@ stock FillXPForLevel() {
 //////////////////////////////////
 //C L I E N T  C O N N E C T E D//
 //////////////////////////////////
-public OnClientPostAdminCheck(client)
+public OnClientConnected(client)
 {
 	if(g_bEnabled)
 	{
 		g_playerLevel[client] = g_iLevelDefault;
 		g_playerExp[client] = GetMinXPForLevel(g_iLevelDefault);
 		g_playerExpNext[client] = GetMinXPForLevel(g_iLevelDefault+1);
+	}
+}
 
-		g_hTimerCheckLevelUp[client] = CreateTimer(1.9, Timer_CheckLevelUp, client);
+public OnClientPutInServer(client)
+{
+	if(g_bEnabled)
+	{
+		g_hTimerCheckLevelUp[client] = CreateTimer(1.9, Timer_CheckLevelUp, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
 		if(g_bAnnounce)
 			g_hTimerAdvertisement[client] = CreateTimer(60.0, Timer_Advertisement, client);
@@ -163,24 +169,24 @@ public OnClientDisconnect(client)
 //S T O C K S//
 ///////////////
 stock CheckAndLevelUp(client) {
-	new bool:bGrown = false;
+	new iGrown = 0;
 	while(g_playerExp[client] >= g_playerExpNext[client] && g_playerLevel[client] < g_iLevelMax && g_playerExpNext[client] != -1)
 	{
 		LogMessage("Player is not level %i anymore, (%i >= %i)", g_playerLevel[client], g_playerExp[client], g_playerExpNext[client]);
 
 		g_playerLevel[client]++;
+		iGrown++;
 		g_playerExpNext[client] = GetMinXPForLevel(g_playerLevel[client]+1);
 
-		bGrown = true;
 		if(g_playerLevel[client] == g_iLevelMax) {
 			g_playerExpNext[client] = -1;
 		}
 	}
 
-	if(bGrown) {
+	if(iGrown > 0) {
 		CPrintToChatAllEx(client, "{teamcolor}%N{default} has grown to: {green}Level %i", client, g_playerLevel[client]);
 
-		Forward_LevelUp(client, g_playerLevel[client]);
+		Forward_LevelUp(client, g_playerLevel[client], iGrown);
 	}
 }
 
@@ -332,12 +338,13 @@ public Native_GetClientXPForLevel(Handle:hPlugin, iNumParams)
 	return GetMinXPForLevel(iLevel);
 }
 
-//public lm_OnClientLevelUp(iClient, iLevel) {};
-public Forward_LevelUp(client, level)
+//public lm_OnClientLevelUp(iClient, iLevel, iAmount) {};
+public Forward_LevelUp(client, level, amount)
 {
 	Call_StartForward(g_hForwardLevelUp);
 	Call_PushCell(client);
 	Call_PushCell(level);
+	Call_PushCell(amount);
 	Call_Finish();
 }
 

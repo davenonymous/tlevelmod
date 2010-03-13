@@ -93,8 +93,9 @@ native bool:lm_IsEnabled();
  *
  * @param iClient		The client who achieved a new level
  * @param iLevel		The level the client achieved
+ * @param iAmount		The amount of levels the client achieved
  */
-forward lm_OnClientLevelUp(iClient,iLevel);
+forward lm_OnClientLevelUp(iClient,iLevel, iAmount);
 
 /**
  * Forwards when a client gains experience
