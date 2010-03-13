@@ -4,7 +4,6 @@
 
 #pragma semicolon 1
 
-#define SOUND_LEVELUP "ui/item_acquired.wav"
 #define PLUGIN_VERSION "0.1.2"
 #define MAXLEVELS 101
 #define FMAXLEVELS 100.0
@@ -84,12 +83,6 @@ public OnPluginStart()
 	// F O R W A R D S //
 	g_hForwardLevelUp = CreateGlobalForward("lm_OnClientLevelUp", ET_Ignore, Param_Cell, Param_Cell);
 	g_hForwardXPGained = CreateGlobalForward("lm_OnClientExperience", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
-
-	// C O M M A N D S //
-	RegAdminCmd("sm_lm_setmylevel", Command_SetLevel, ADMFLAG_ROOT);
-	RegAdminCmd("sm_lm_givexp", Command_GiveXP, ADMFLAG_ROOT);
-
-	PrecacheSound(SOUND_LEVELUP, true);
 }
 
 public OnConfigsExecuted()
@@ -151,33 +144,6 @@ public Action:Timer_CheckLevelUp(Handle:timer, any:client)
 }
 
 
-////////////////////
-//C O M M A N D S //
-////////////////////
-public Action:Command_SetLevel(client, args)
-{
-	new String:arg1[64];
-	GetCmdArg(1, arg1, sizeof(arg1));
-
-	new newLevel = StringToInt(arg1);
-
-	SetLevel(client, newLevel);
-	return Plugin_Handled;
-}
-
-public Action:Command_GiveXP(client, args)
-{
-	new String:arg1[64];
-	GetCmdArg(1, arg1, sizeof(arg1));
-
-	new newLevel = StringToInt(arg1);
-
-	GiveXP(client, newLevel, 0);
-
-	return Plugin_Handled;
-}
-
-
 ///////////////////////
 //D I S C O N N E C T//
 ///////////////////////
@@ -213,7 +179,6 @@ stock CheckAndLevelUp(client) {
 
 	if(bGrown) {
 		CPrintToChatAllEx(client, "{teamcolor}%N{default} has grown to: {green}Level %i", client, g_playerLevel[client]);
-		EmitSoundToClient(client, SOUND_LEVELUP);
 
 		Forward_LevelUp(client, g_playerLevel[client]);
 	}
