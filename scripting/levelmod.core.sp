@@ -53,14 +53,6 @@ public OnPluginStart()
 	// V E R S I O N    C V A R //
 	CreateConVar("sm_lm_version", PLUGIN_VERSION, "Version of the plugin", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 
-	// G A M E  C H E C K //
-	decl String:game[32];
-	GetGameFolderName(game, sizeof(game));
-	if(!(StrEqual(game, "tf")))
-	{
-		SetFailState("This plugin is not for %s", game);
-	}
-
 	// C O N V A R S //
 	g_hCvarEnable = CreateConVar("sm_lm_enabled", "1", "Enables the plugin", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	g_hCvarAnnounce = CreateConVar("sm_lm_announce", "1", "Announce the mod to clients joining the server", FCVAR_PLUGIN, true, 0.0, true, 1.0);
