@@ -25,9 +25,9 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
 	// C O M M A N D S //
-	RegAdminCmd("sm_lm_setlevel", Command_SetLevel, ADMFLAG_ROOT);
-	RegAdminCmd("sm_lm_givexp", Command_GiveXP, ADMFLAG_ROOT);
-
+	RegAdminCmd("sm_lm_setlevel", Command_SetLevel, ADMFLAG_KICK);
+	RegAdminCmd("sm_lm_givexp", Command_GiveXP, ADMFLAG_KICK);
+	RegAdminCmd("sm_lm_showlist", Command_ShowList, ADMFLAG_KICK);
 }
 
 ////////////////////
@@ -133,6 +133,22 @@ public Action:Command_GiveXP(client, args)
 			if (!IsClientInGame(TargetList[i]))    continue;
 
 			lm_GiveXP(TargetList[i], xpToAdd, 0);
+		}
+	}
+
+	return Plugin_Handled;
+}
+
+public Action:Command_ShowList(client, args)
+{
+	for(new i = 1; i <= MaxClients; i++) {
+		if(IsClientConnected(i) && IsClientInGame(i)) {
+			new xp = lm_GetClientXP(i);
+			new xpNext = lm_GetClientXPNext(i);
+			new level = lm_GetClientLevel(i);
+			new base = lm_GetXpRequiredForLevel(level);
+
+			ReplyToCommand(client, "%N is Level %i (XP: %i/%i | %i/%i)", i, level, xp, xpNext, xp - base,xpNext - base);
 		}
 	}
 

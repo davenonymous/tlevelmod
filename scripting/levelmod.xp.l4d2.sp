@@ -11,12 +11,14 @@ new Handle:g_hCvarXPForSpecialKill;
 new Handle:g_hCvarXPForZombieKill;
 new Handle:g_hCvarXPForSaving;
 new Handle:g_hCvarXPForTankKill;
+new Handle:g_hCvarXPForIncapacitating;
 
 new g_iXPForSpecialKill;
 new g_iXPForZombieKill;
 new g_iXPForTankKill;
 new g_iXPForSaving;
 new g_iXPForWinning;
+new g_iXPForIncapacitating;
 
 ////////////////////////
 //P L U G I N  I N F O//
@@ -42,12 +44,18 @@ public OnPluginStart()
 	g_hCvarXPForTankKill = CreateConVar("sm_lm_exp_specialkill", "30", "Amount of xp given for killing a tank", FCVAR_PLUGIN, true, 0.0);
 
 	HookEvent("tank_killed", Event_TankKill);
+
+	HookEvent("witch_killed", Event_SpecialKillUser);
+	HookEvent("boomer_exploded", Event_SpecialKillUser);
+
 	HookEvent("charger_killed", Event_SpecialKill);
 	HookEvent("spitter_killed", Event_SpecialKill);
 	HookEvent("jockey_killed", Event_SpecialKill);
 	HookEvent("charger_killed", Event_SpecialKill);
+
 	HookEvent("infected_death", Event_ZombieKill);
 
+	HookEvent("player_incapacitated", Event_Incap);
 	HookEvent("revive_success", Event_Revive);
 
 	HookEvent("versus_match_finished", Event_RoundWin);
@@ -61,6 +69,7 @@ public OnConfigsExecuted()
 	g_iXPForSpecialKill = GetConVarInt(g_hCvarXPForSpecialKill);
 	g_iXPForZombieKill = GetConVarInt(g_hCvarXPForZombieKill);
 	g_iXPForSaving = GetConVarInt(g_hCvarXPForSaving);
+	g_iXPForIncapacitating = GetConVarInt(g_hCvarXPForIncapacitating);
 }
 
 public Cvar_Changed(Handle:convar, const String:oldValue[], const String:newValue[]) {
@@ -84,6 +93,19 @@ public Event_RoundWin(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 }
 
+public Event_Incap(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(lm_IsEnabled())
+	{
+		new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+
+		if(attacker > 0)
+		{
+			lm_GiveXP(attacker, g_iXPForIncapacitating, 1);
+		}
+	}
+}
+
 public Event_Revive(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(lm_IsEnabled())
@@ -102,6 +124,19 @@ public Event_SpecialKill(Handle:event, const String:name[], bool:dontBroadcast)
 	if(lm_IsEnabled())
 	{
 		new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+
+		if(attacker > 0)
+		{
+			lm_GiveXP(attacker, g_iXPForSpecialKill, 1);
+		}
+	}
+}
+
+public Event_SpecialKillUser(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(lm_IsEnabled())
+	{
+		new attacker = GetClientOfUserId(GetEventInt(event, "userid"));
 
 		if(attacker > 0)
 		{
