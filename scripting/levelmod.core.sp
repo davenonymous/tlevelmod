@@ -58,7 +58,7 @@ public OnPluginStart()
 	g_hCvarAnnounce = CreateConVar("sm_lm_announce", "1", "Announce the mod to clients joining the server", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
 	g_hCvarLevel_default = CreateConVar("sm_lm_level_default", "0", "Default level for players when they join", FCVAR_PLUGIN, true, 1.0);
-	g_hCvarLevel_max = CreateConVar("sm_lm_level_max", "100", "Maxmimum level players can reach", FCVAR_PLUGIN, true, 1.0, true, FMAXLEVELS);
+	g_hCvarLevel_max = CreateConVar("sm_lm_level_max", "100", "Maximum level players can reach", FCVAR_PLUGIN, true, 1.0, true, FMAXLEVELS);
 
 	g_hCvarExp_ReqBase = CreateConVar("sm_lm_exp_reqbase", "100", "Experience required for the first level", FCVAR_PLUGIN, true, 1.0);
 	g_hCvarExp_ReqMulti = CreateConVar("sm_lm_exp_reqmulti", "1.0", "Experience required grows by this multiplier every level", FCVAR_PLUGIN, true, 1.0);
