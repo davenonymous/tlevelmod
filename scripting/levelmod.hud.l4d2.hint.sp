@@ -16,13 +16,14 @@ new Handle:g_hCvarLevelUpParticles;
 new Handle:g_hLevelHUD[MAXPLAYERS+1] = INVALID_HANDLE;
 
 new bool:g_bLevelUpParticles;
+new String:g_lastString[MAXPLAYERS+1][256];
 
 ////////////////////////
 //P L U G I N  I N F O//
 ////////////////////////
 public Plugin:myinfo =
 {
-	name = "Leveling Mod, L4D2 Interface",
+	name = "Leveling Mod, L4D2 Interface, Hint based",
 	author = "Thrawn",
 	description = "A interface fitting to left4dead2",
 	version = PLUGIN_VERSION,
@@ -38,7 +39,7 @@ public OnPluginStart()
 
 	HookConVarChange(g_hCvarLevelUpParticles, Cvar_Changed);
 
-	HookEvent("player_spawn",       Event_PlayerSpawn);
+	HookEvent("player_spawn", Event_PlayerSpawn);
 }
 
 public OnMapStart() {
@@ -78,29 +79,23 @@ public Action:Timer_DrawHud(Handle:timer, any:client)
 {
 	if(IsClientInGame(client))
 	{
-		new Handle:HUDPanel = CreatePanel();
 		decl String:TempString[256];
-
 		new iPlayerLevel = lm_GetClientLevel(client);
-		Format(TempString, sizeof(TempString), "Level: %i", iPlayerLevel);
-
-		SetPanelTitle(HUDPanel, TempString);
 
 		if(iPlayerLevel >= lm_GetLevelMax())
 		{
-			DrawPanelItem(HUDPanel, "XP: MAX LEVEL REACHED");
+			Format(TempString, sizeof(TempString), "Level: %i | XP: Max Level Reached", iPlayerLevel);
 		}
 		else
 		{
 			new iRequired = lm_GetXpRequiredForLevel(iPlayerLevel+1) - lm_GetXpRequiredForLevel(iPlayerLevel);
 			new iAchieved = lm_GetClientXP(client) - lm_GetXpRequiredForLevel(iPlayerLevel);
 
-			Format(TempString, sizeof(TempString), "XP: %i/%i", iAchieved, iRequired);
-			DrawPanelItem(HUDPanel, TempString);
+			Format(TempString, sizeof(TempString), "Level: %i | XP: %i/%i", iPlayerLevel, iAchieved, iRequired);
+			g_lastString[client] = TempString;
 		}
 
-		SendPanelToClient(HUDPanel, client, PanelHandler, 3);
-		CloseHandle(HUDPanel);
+		PrintHintText(client, TempString);
 
 		g_hLevelHUD[client] = CreateTimer(3.0, Timer_DrawHud, client);
 	}
@@ -117,8 +112,11 @@ stock ShowMiniMessage(client, String:TempString[]) {
 		ClearTimer(g_hLevelHUD[client]);
 
 		new Handle:HUDPanel = CreatePanel();
-		SetPanelTitle(HUDPanel, TempString);
-		SendPanelToClient(HUDPanel, client, PanelHandler, 1);
+
+		decl String:sToSend[256];
+		Format(sToSend,sizeof(sToSend),"%s %s",	g_lastString[client], TempString);
+
+		PrintHintText(client, sToSend);
 		CloseHandle(HUDPanel);
 
 		g_hLevelHUD[client] = CreateTimer(1.0, Timer_DrawHud, client);
