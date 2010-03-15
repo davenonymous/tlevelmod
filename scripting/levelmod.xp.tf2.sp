@@ -37,6 +37,14 @@ public Plugin:myinfo =
 //////////////////////////
 public OnPluginStart()
 {
+	// G A M E  C H E C K //
+	decl String:game[32];
+	GetGameFolderName(game, sizeof(game));
+	if(!(StrEqual(game, "tf")))
+	{
+		SetFailState("This plugin is not for %s", game);
+	}
+
 	g_iHealsOff = FindSendPropInfo("CTFPlayer", "m_iHealPoints");
 	g_hCvarHealExpMult = CreateConVar("sm_lm_exp_healmulti", "0.03", "Heal multiplied by this value will be given as xp", FCVAR_PLUGIN, true, 0.0);
 	g_hCvarXPForChargeKill = CreateConVar("sm_lm_exp_chargekill", "20", "Amount of xp given for killing a charged medic", FCVAR_PLUGIN, true, 0.0);

@@ -35,6 +35,14 @@ public Plugin:myinfo =
 //////////////////////////
 public OnPluginStart()
 {
+	// G A M E  C H E C K //
+	decl String:game[32];
+	GetGameFolderName(game, sizeof(game));
+	if(!(StrEqual(game, "left4dead2")))
+	{
+		SetFailState("This plugin is not for %s", game);
+	}
+
 	g_hCvarXPForWinning = CreateConVar("sm_lm_exp_winning", "20", "Amount of xp given for winning a round", FCVAR_PLUGIN, true, 0.0);
 	g_hCvarXPForSpecialKill = CreateConVar("sm_lm_exp_specialkill", "10", "Amount of xp given for killing a special zombie", FCVAR_PLUGIN, true, 0.0);
 	g_hCvarXPForZombieKill = CreateConVar("sm_lm_exp_zombiekill", "2", "Amount of xp given for killing a common zombie", FCVAR_PLUGIN, true, 0.0);

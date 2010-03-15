@@ -40,6 +40,14 @@ public Plugin:myinfo =
 //////////////////////////
 public OnPluginStart()
 {
+	// G A M E  C H E C K //
+	decl String:game[32];
+	GetGameFolderName(game, sizeof(game));
+	if(!(StrEqual(game, "tf")))
+	{
+		SetFailState("This plugin is not for %s", game);
+	}
+
 	g_hCvarLevelUpParticles = CreateConVar("sm_lm_levelupparticle", "1", "Enables level up particle effects", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
 	HookConVarChange(g_hCvarLevelUpParticles, Cvar_Changed);
