@@ -56,7 +56,7 @@ native lm_GetClientXPNext(iClient);
  * @param iXP			Amount of XP to give
  * @param iChannel		Hud-Channel to use (valid: 0 for primary, 1 for secondary)
  */
-native lm_GiveXP(iClient, iXP, iChannel);
+native lm_GiveXP(iClient, iXP, iChannel = 0);
 
 /**
  * Gives levels to a client (shows level up notification)

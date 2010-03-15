@@ -1,7 +1,5 @@
 #include <sourcemod>
-#include <sdktools>
 #include <levelmod>
-#include <colors>
 
 #pragma semicolon 1
 #define PLUGIN_VERSION "0.1.0"
@@ -87,7 +85,7 @@ public Event_RoundWin(Handle:event, const String:name[], bool:dontBroadcast)
 
 		for (new client = 1; client <= MaxClients; client++) {
 			if(GetClientTeam(client) == team) {
-				lm_GiveXP(client, g_iXPForWinning, 1);
+				lm_GiveXP(client, g_iXPForWinning);
 			}
 		}
 	}
@@ -101,7 +99,7 @@ public Event_Incap(Handle:event, const String:name[], bool:dontBroadcast)
 
 		if(attacker > 0)
 		{
-			lm_GiveXP(attacker, g_iXPForIncapacitating, 1);
+			lm_GiveXP(attacker, g_iXPForIncapacitating);
 		}
 	}
 }
@@ -114,7 +112,7 @@ public Event_Revive(Handle:event, const String:name[], bool:dontBroadcast)
 
 		if(attacker > 0)
 		{
-			lm_GiveXP(attacker, g_iXPForSaving, 1);
+			lm_GiveXP(attacker, g_iXPForSaving);
 		}
 	}
 }
@@ -127,7 +125,7 @@ public Event_SpecialKill(Handle:event, const String:name[], bool:dontBroadcast)
 
 		if(attacker > 0)
 		{
-			lm_GiveXP(attacker, g_iXPForSpecialKill, 1);
+			lm_GiveXP(attacker, g_iXPForSpecialKill);
 		}
 	}
 }
@@ -140,7 +138,7 @@ public Event_SpecialKillUser(Handle:event, const String:name[], bool:dontBroadca
 
 		if(attacker > 0)
 		{
-			lm_GiveXP(attacker, g_iXPForSpecialKill, 1);
+			lm_GiveXP(attacker, g_iXPForSpecialKill);
 		}
 	}
 }
@@ -153,7 +151,7 @@ public Event_TankKill(Handle:event, const String:name[], bool:dontBroadcast)
 
 		if(attacker > 0)
 		{
-			lm_GiveXP(attacker, g_iXPForTankKill, 1);
+			lm_GiveXP(attacker, g_iXPForTankKill);
 		}
 	}
 }
@@ -167,9 +165,9 @@ public Event_ZombieKill(Handle:event, const String:name[], bool:dontBroadcast)
 		if(attacker > 0)
 		{
 			if(GetEventBool(event, "headshot"))
-				lm_GiveXP(attacker, g_iXPForZombieKill, 1);
+				lm_GiveXP(attacker, g_iXPForZombieKill);
 			else
-				lm_GiveXP(attacker, g_iXPForZombieKill, 1);
+				lm_GiveXP(attacker, g_iXPForZombieKill);
 		}
 	}
 }

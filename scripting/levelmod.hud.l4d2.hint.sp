@@ -16,7 +16,6 @@ new Handle:g_hCvarLevelUpParticles;
 new Handle:g_hLevelHUD[MAXPLAYERS+1] = INVALID_HANDLE;
 
 new bool:g_bLevelUpParticles;
-new String:g_lastString[MAXPLAYERS+1][256];
 
 ////////////////////////
 //P L U G I N  I N F O//
@@ -92,7 +91,6 @@ public Action:Timer_DrawHud(Handle:timer, any:client)
 			new iAchieved = lm_GetClientXP(client) - lm_GetXpRequiredForLevel(iPlayerLevel);
 
 			Format(TempString, sizeof(TempString), "Level: %i | XP: %i/%i", iPlayerLevel, iAchieved, iRequired);
-			g_lastString[client] = TempString;
 		}
 
 		PrintHintText(client, TempString);
@@ -106,17 +104,29 @@ public PanelHandler(Handle:menu, MenuAction:action, param1, param2)
 	//nothing to do
 }
 
-stock ShowMiniMessage(client, String:TempString[]) {
+stock ShowMiniMessage(client, String:MsgString[]) {
 	if(IsClientInGame(client))
 	{
 		ClearTimer(g_hLevelHUD[client]);
 
 		new Handle:HUDPanel = CreatePanel();
 
-		decl String:sToSend[256];
-		Format(sToSend,sizeof(sToSend),"%s %s",	g_lastString[client], TempString);
+		new iPlayerLevel = lm_GetClientLevel(client);
 
-		PrintHintText(client, sToSend);
+		decl String:TempString[256];
+		if(iPlayerLevel >= lm_GetLevelMax())
+		{
+			Format(TempString, sizeof(TempString), "Level: %i | XP: Max Level Reached | %s", iPlayerLevel, MsgString);
+		}
+		else
+		{
+			new iRequired = lm_GetXpRequiredForLevel(iPlayerLevel+1) - lm_GetXpRequiredForLevel(iPlayerLevel);
+			new iAchieved = lm_GetClientXP(client) - lm_GetXpRequiredForLevel(iPlayerLevel);
+
+			Format(TempString, sizeof(TempString), "Level: %i | XP: %i/%i | %s", iPlayerLevel, iAchieved, iRequired, MsgString);
+		}
+
+		PrintHintText(client, TempString);
 		CloseHandle(HUDPanel);
 
 		g_hLevelHUD[client] = CreateTimer(1.0, Timer_DrawHud, client);
