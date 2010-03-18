@@ -18,10 +18,11 @@ new Handle:g_hCvarEnable;
 new Handle:g_hCvarAnnounce;
 new Handle:g_hCvarLevel_default;
 new Handle:g_hCvarLevel_max;
-new Handle:g_hForwardLevelUp;
-new Handle:g_hForwardXPGained;
 new Handle:g_hCvarExp_ReqBase;
 new Handle:g_hCvarExp_ReqMulti;
+
+new Handle:g_hForwardLevelUp;
+new Handle:g_hForwardXPGained;
 
 
 new bool:g_bEnabled;
@@ -100,7 +101,8 @@ stock FillXPForLevel() {
 	g_iXPForLevel[1] = g_iExpReqBase;
 
 	for(new level=2; level < MAXLEVELS; level++) {
-		g_iXPForLevel[level] = g_iXPForLevel[level-1] + RoundFloat(g_iExpReqBase*level*g_fExpReqMult);
+		//g_iXPForLevel[level] = g_iXPForLevel[level-1] + RoundFloat(g_iExpReqBase*level*g_fExpReqMult);
+		g_iXPForLevel[level] = g_iXPForLevel[level-1] + RoundFloat((g_iXPForLevel[level-1] - g_iXPForLevel[level-2]) * g_fExpReqMult);
 	}
 }
 //////////////////////////////////
