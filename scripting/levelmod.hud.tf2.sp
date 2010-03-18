@@ -137,19 +137,24 @@ public OnClientDisconnect(client)
 		CloseHandle(g_hLevelHUD[client]);
 }
 
-public lm_OnClientLevelUp(client, level, amount)
+public lm_OnClientLevelUp(client, level, amount, bool:isLevelDown)
 {
 	SetHudTextParams(0.24, 0.90, 5.0, 100, 255, 100, 150, 2);
-	ShowSyncHudText(client, g_hHudLevelUp, "LEVEL UP!");
 
-	EmitSoundToClient(client, SOUND_LEVELUP);
+	if(isLevelDown) {
+		ShowSyncHudText(client, g_hHudLevelUp, "LEVEL LOST!");
+	} else {
+		ShowSyncHudText(client, g_hHudLevelUp, "LEVEL UP!");
 
-	if(g_bLevelUpParticles) {
-		//achieved
-		new Float:pos[3];
-		GetClientAbsOrigin(client, pos);
+		EmitSoundToClient(client, SOUND_LEVELUP);
 
-		CreateParticle("achieved", 3.0, client, ATTACH_HEAD, 0.0, 0.0, 4.0);
+		if(g_bLevelUpParticles) {
+			//achieved
+			new Float:pos[3];
+			GetClientAbsOrigin(client, pos);
+
+			CreateParticle("achieved", 3.0, client, ATTACH_HEAD, 0.0, 0.0, 4.0);
+		}
 	}
 }
 

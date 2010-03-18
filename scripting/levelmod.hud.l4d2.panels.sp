@@ -134,17 +134,21 @@ stock ShowMiniMessage(client, String:TempString[]) {
 	}
 }
 
-public lm_OnClientLevelUp(client, level, amount)
+public lm_OnClientLevelUp(client, level, amount, bool:isLevelDown)
 {
-	ShowMiniMessage(client, "LEVEL UP");
-	EmitSoundToClient(client, SOUND_LEVELUP);
+	if(isLevelDown) {
+		ShowMiniMessage(client, "LEVEL LOST");
+	} else {
+		ShowMiniMessage(client, "LEVEL UP");
+		EmitSoundToClient(client, SOUND_LEVELUP);
 
-	if(g_bLevelUpParticles && false) {
-		//achieved
-		new Float:pos[3];
-		GetClientAbsOrigin(client, pos);
+		if(g_bLevelUpParticles && false) {
+			//achieved
+			new Float:pos[3];
+			GetClientAbsOrigin(client, pos);
 
-		CreateParticle("achieved", 3.0, client, ATTACH_HEAD, 0.0, 0.0, 4.0);
+			CreateParticle("achieved", 3.0, client, ATTACH_HEAD, 0.0, 0.0, 4.0);
+		}
 	}
 }
 

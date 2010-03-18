@@ -140,7 +140,7 @@ public Action:Timer_Advertisement(Handle:timer, any:client)
 
 public Action:Timer_CheckLevelUp(Handle:timer, any:client)
 {
-	CheckAndLevelUp(client);
+	CheckAndLevel(client);
 }
 
 
@@ -162,14 +162,28 @@ public OnClientDisconnect(client)
 ///////////////
 //S T O C K S//
 ///////////////
-stock CheckAndLevelUp(client) {
-	new iGrown = 0;
-	while(g_playerExp[client] >= g_playerExpNext[client] && g_playerLevel[client] < g_iLevelMax && g_playerExpNext[client] != -1)
+stock CheckAndLevel(client) {
+	new iCount = 0;
+	new bool:lvlDown = false;
+	//check level down
+	while(g_playerExp[client] < GetMinXPForLevel(g_playerLevel[client]) && g_playerLevel[client] > 0)
+	{
+		LogMessage("Player is not level %i anymore, (%i < %i)", g_playerLevel[client], g_playerExp[client], GetMinXPForLevel(g_playerLevel[client]));
+
+		g_playerLevel[client]--;
+		iCount++;
+		g_playerExpNext[client] = GetMinXPForLevel(g_playerLevel[client]+1);
+
+		lvlDown = true;
+	}
+
+	//check level up
+	while(!lvlDown && g_playerExp[client] >= g_playerExpNext[client] && g_playerLevel[client] < g_iLevelMax && g_playerExpNext[client] != -1)
 	{
 		LogMessage("Player is not level %i anymore, (%i >= %i)", g_playerLevel[client], g_playerExp[client], g_playerExpNext[client]);
 
 		g_playerLevel[client]++;
-		iGrown++;
+		iCount++;
 		g_playerExpNext[client] = GetMinXPForLevel(g_playerLevel[client]+1);
 
 		if(g_playerLevel[client] == g_iLevelMax) {
@@ -177,10 +191,10 @@ stock CheckAndLevelUp(client) {
 		}
 	}
 
-	if(iGrown > 0) {
+	if(iCount > 0) {
 		CPrintToChatAllEx(client, "{teamcolor}%N{default} has grown to: {green}Level %i", client, g_playerLevel[client]);
 
-		Forward_LevelUp(client, g_playerLevel[client], iGrown);
+		Forward_LevelChange(client, g_playerLevel[client], iCount, lvlDown);
 	}
 }
 
@@ -332,13 +346,14 @@ public Native_GetClientXPForLevel(Handle:hPlugin, iNumParams)
 	return GetMinXPForLevel(iLevel);
 }
 
-//public lm_OnClientLevelUp(iClient, iLevel, iAmount) {};
-public Forward_LevelUp(client, level, amount)
+//public lm_OnClientLevelUp(iClient, iLevel, iAmount, bool:isLevelDown) {};
+public Forward_LevelChange(client, level, amount, bool:isLevelDown)
 {
 	Call_StartForward(g_hForwardLevelUp);
 	Call_PushCell(client);
 	Call_PushCell(level);
 	Call_PushCell(amount);
+	Call_PushCell(isLevelDown);
 	Call_Finish();
 }
 

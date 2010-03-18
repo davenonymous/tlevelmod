@@ -94,8 +94,9 @@ native bool:lm_IsEnabled();
  * @param iClient		The client who achieved a new level
  * @param iLevel		The level the client achieved
  * @param iAmount		The amount of levels the client achieved
+ * @param bool:isLevelDown	This is true if the player leveledDown
  */
-forward lm_OnClientLevelUp(iClient,iLevel, iAmount);
+forward lm_OnClientLevelUp(iClient,iLevel, iAmount, bool:isLevelDown);
 
 /**
  * Forwards when a client gains experience
