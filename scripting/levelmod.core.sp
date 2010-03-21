@@ -1,6 +1,5 @@
 #include <sourcemod>
 #include <sdktools>
-#include <colors>
 
 #pragma semicolon 1
 
@@ -12,10 +11,8 @@ new g_playerLevel[MAXPLAYERS+1];
 new g_playerExp[MAXPLAYERS+1];
 new g_playerExpNext[MAXPLAYERS+1];
 
-new Handle:g_hTimerAdvertisement[MAXPLAYERS+1] = INVALID_HANDLE;
 new Handle:g_hTimerCheckLevelUp[MAXPLAYERS+1] = INVALID_HANDLE;
 new Handle:g_hCvarEnable;
-new Handle:g_hCvarAnnounce;
 new Handle:g_hCvarLevel_default;
 new Handle:g_hCvarLevel_max;
 new Handle:g_hCvarExp_ReqBase;
@@ -26,7 +23,7 @@ new Handle:g_hForwardXPGained;
 
 
 new bool:g_bEnabled;
-new bool:g_bAnnounce;
+
 
 new g_iXPForLevel[MAXLEVELS];
 new g_iLevelDefault;
@@ -56,7 +53,6 @@ public OnPluginStart()
 
 	// C O N V A R S //
 	g_hCvarEnable = CreateConVar("sm_lm_enabled", "1", "Enables the plugin", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	g_hCvarAnnounce = CreateConVar("sm_lm_announce", "1", "Announce the mod to clients joining the server", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
 	g_hCvarLevel_default = CreateConVar("sm_lm_level_default", "0", "Default level for players when they join", FCVAR_PLUGIN, true, 1.0);
 	g_hCvarLevel_max = CreateConVar("sm_lm_level_max", "100", "Maximum level players can reach", FCVAR_PLUGIN, true, 1.0, true, FMAXLEVELS);
@@ -65,7 +61,6 @@ public OnPluginStart()
 	g_hCvarExp_ReqMulti = CreateConVar("sm_lm_exp_reqmulti", "1.0", "Experience required grows by this multiplier every level", FCVAR_PLUGIN, true, 1.0);
 
 	HookConVarChange(g_hCvarEnable, Cvar_Changed);
-	HookConVarChange(g_hCvarAnnounce, Cvar_Changed);
 
 	HookConVarChange(g_hCvarLevel_default, Cvar_Changed);
 	HookConVarChange(g_hCvarLevel_max, Cvar_Changed);
@@ -81,7 +76,6 @@ public OnPluginStart()
 public OnConfigsExecuted()
 {
 	g_bEnabled = GetConVarBool(g_hCvarEnable);
-	g_bAnnounce = GetConVarBool(g_hCvarAnnounce);
 
 	g_iLevelDefault = GetConVarInt(g_hCvarLevel_default);
 	g_iLevelMax = GetConVarInt(g_hCvarLevel_max);
@@ -123,26 +117,16 @@ public OnClientPutInServer(client)
 	if(g_bEnabled)
 	{
 		g_hTimerCheckLevelUp[client] = CreateTimer(1.9, Timer_CheckLevelUp, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-
-		if(g_bAnnounce)
-			g_hTimerAdvertisement[client] = CreateTimer(60.0, Timer_Advertisement, client);
 	}
 }
 
 ///////////////
 //T I M E R S//
 ///////////////
-public Action:Timer_Advertisement(Handle:timer, any:client)
-{
-	g_hTimerAdvertisement[client] = INVALID_HANDLE;
-	CPrintToChat(client, "This server is running {blue}Leveling Mod{default}.");
-}
-
 public Action:Timer_CheckLevelUp(Handle:timer, any:client)
 {
 	CheckAndLevel(client);
 }
-
 
 ///////////////////////
 //D I S C O N N E C T//
@@ -151,9 +135,6 @@ public OnClientDisconnect(client)
 {
 	if(g_bEnabled)
 	{
-		if(g_hTimerAdvertisement[client]!=INVALID_HANDLE)
-			CloseHandle(g_hTimerAdvertisement[client]);
-
 		if(g_hTimerCheckLevelUp[client]!=INVALID_HANDLE)
 			CloseHandle(g_hTimerCheckLevelUp[client]);
 	}
@@ -192,8 +173,6 @@ stock CheckAndLevel(client) {
 	}
 
 	if(iCount > 0) {
-		CPrintToChatAllEx(client, "{teamcolor}%N{default} has grown to: {green}Level %i", client, g_playerLevel[client]);
-
 		Forward_LevelChange(client, g_playerLevel[client], iCount, lvlDown);
 	}
 }
