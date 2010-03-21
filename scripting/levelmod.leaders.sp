@@ -5,13 +5,18 @@
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "0.1.0"
+#define PLUGIN_VERSION "0.1.1"
 
 new Handle:g_hForwardLeadChange;
 
-new g_Leaders[MAXPLAYERS+1];
-new g_iLeaderLevel = 0;
-new g_LeaderCount = 0;
+new g_iLeaderCount = 0;
+
+enum states {
+	ISLEADER,
+	ISTIED
+}
+
+new bool:g_bClientState[MAXPLAYERS+1][states];
 
 public Plugin:myinfo =
 {
@@ -31,255 +36,72 @@ public OnPluginStart()
 }
 
 
+stock collectStates() {
+	new iLevelHighest = lm_GetLevelHighest();
+	new leaders[MAXPLAYERS+1];
+	g_iLeaderCount = getPlayersOnRank(iLevelHighest, leaders);
 
+	for(new client=1; client <= MaxClients; client++) {
+		new iLevel = lm_GetClientLevel(client);
 
-public lm_OnClientLevelUp(iClient,iLevel, iAmount, bool:isLevelDown) {
-	new iLeaderLevel = g_iLeaderLevel;
-	if(isLevelDown) {
-		//<iClient> lost <iAmount> level(s) and is now at level <iLevel>
-		new iPreviousLevel = iLevel + iAmount;
-
-		//everyone on the previous level is tied with each other  **2**
-		//	unless there is only one, he could be the new leader. **1**
-		//if no one is on the previous level, the new leaders are
-		//  the ones on the second highest level
-		new iClientsCntPreviousLevel = 0;
-		new iClientsOnPreviousLevel[MAXPLAYERS+1];
-		new iClientsCntSameLevel = 0;
-		new iClientsOnSameLevel[MAXPLAYERS+1];
-		new iClientsCntSecondHighestLevel = 0;
-		new iClientsOnSecondHighestLevel[MAXPLAYERS+1];
-
-
-		new iSecondHighestLeaderLevel = 0;
-		for(new client=1; client <= MaxClients; client++) {
-			new iHisLevel = lm_GetClientLevel(client);
-
-			if(iLeaderLevel < iHisLevel)
-				iLeaderLevel = iHisLevel;
-
-			if(iHisLevel > iSecondHighestLeaderLevel && iHisLevel != g_iLeaderLevel) {
-				iSecondHighestLeaderLevel = iHisLevel;
-				for(new i=0; i < iClientsCntSecondHighestLevel; i++)
-					iClientsOnSecondHighestLevel[i] = 0;
-
-				iClientsCntSecondHighestLevel = 0;
-			}
-
-			if(iHisLevel == iSecondHighestLeaderLevel) {
-				//client is on the second highest level
-				iClientsOnSecondHighestLevel[iClientsCntSecondHighestLevel] = client;
-				iClientsCntSecondHighestLevel++;
-			}
-
-			if(iHisLevel == iPreviousLevel) {
-				//client is on the previous level
-				iClientsOnPreviousLevel[iClientsCntPreviousLevel] = client;
-				iClientsCntPreviousLevel++;
-			}
-
-			if(iHisLevel == iLevel) {
-				//client is on the same level
-				iClientsOnSameLevel[iClientsCntSameLevel] = client;
-				iClientsCntSameLevel++;
-			}
-		}
-
-
-		if(iPreviousLevel == g_iLeaderLevel) {
-			if(iClientsCntPreviousLevel > 0) {
-				Forward_LeadChange(iClient, lm_LOSTTHELEAD, iClientsOnPreviousLevel, iClientsCntPreviousLevel);
-
-				if(iClientsCntSameLevel > 1) {
-					for(new i = 0; i < iClientsCntSameLevel; i++) {
-						Forward_LeadChange(iClientsOnSameLevel[i], lm_TIEDONLEVEL, iClientsOnSameLevel, iClientsCntSameLevel);
-					}
-				} else {
-					Forward_LeadChange(iClient, lm_ALONEONLEVEL, iClientsOnSameLevel, iClientsCntSameLevel);
-				}
-			}
-
-			if(iClientsCntPreviousLevel == 1) {
-				//**1** iClientsOnPreviousLevel[0] has taken the lead
-				Forward_LeadChange(iClientsOnPreviousLevel[0], lm_TAKENTHELEAD, iClientsOnPreviousLevel, iClientsCntPreviousLevel);
-				iLeaderLevel = iPreviousLevel;
-			}
-
-			if(iClientsCntPreviousLevel > 1) {
-				//**2** iClientsOnPreviousLevel[] are tied for the lead
-				iLeaderLevel = iPreviousLevel;
-				for(new i = 0; i < iClientsCntPreviousLevel; i++) {
-					Forward_LeadChange(iClientsOnPreviousLevel[i], lm_TIEDFORTHELEAD, iClientsOnPreviousLevel, iClientsCntPreviousLevel);
-				}
-			}
-
-			if(iClientsCntPreviousLevel == 0) {
-				if(iClientsCntSecondHighestLevel > 0) {
-					Forward_LeadChange(iClient, lm_LOSTTHELEAD, iClientsOnSecondHighestLevel, iClientsCntSecondHighestLevel);
-
-					if(iClientsCntSameLevel > 1) {
-						for(new i = 0; i < iClientsCntSameLevel; i++) {
-							Forward_LeadChange(iClientsOnSameLevel[i], lm_TIEDONLEVEL, iClientsOnSameLevel, iClientsCntSameLevel);
-						}
-					} else {
-						Forward_LeadChange(iClient, lm_ALONEONLEVEL, iClientsOnSameLevel, iClientsCntSameLevel);
-					}
-				}
-
-
-				if(iClientsCntSecondHighestLevel == 1) {
-					//**3** iClientsOnSecondHighestLevel[0] has taken the lead
-					Forward_LeadChange(iClientsOnSecondHighestLevel[0], lm_TAKENTHELEAD, iClientsOnSecondHighestLevel, iClientsCntSecondHighestLevel);
-					iLeaderLevel = iLevel;
-				}
-
-				if(iClientsCntSecondHighestLevel > 1) {
-					//**4** iClientsOnSecondHighestLevel[] are tied for the lead
-					iLeaderLevel = iLevel;
-					for(new i = 0; i < iClientsCntSecondHighestLevel; i++) {
-						Forward_LeadChange(iClientsOnSecondHighestLevel[i], lm_TIEDFORTHELEAD, iClientsOnSecondHighestLevel, iClientsCntSecondHighestLevel);
-					}
-				}
-			}
+		if(iLevel == iLevelHighest) {
+			//is a leader
+			if(g_iLeaderCount > 1)
+				isTiedNow(client);
+			else
+				isLeaderNow(client);
 		} else {
-			//what if previous level was not the leader level
-			if(iClientsCntSameLevel > 1) {
-				for(new i = 0; i < iClientsCntSameLevel; i++) {
-					Forward_LeadChange(iClientsOnSameLevel[i], lm_TIEDONLEVEL, iClientsOnSameLevel, iClientsCntSameLevel);
-				}
-			} else {
-				Forward_LeadChange(iClient, lm_ALONEONLEVEL, iClientsOnSameLevel, iClientsCntSameLevel);
-			}
-
-			if(iClientsCntPreviousLevel > 1) {
-				for(new i = 0; i < iClientsCntPreviousLevel; i++) {
-					Forward_LeadChange(iClientsOnPreviousLevel[i], lm_TIEDONLEVEL, iClientsOnPreviousLevel, iClientsCntPreviousLevel);
-				}
-			} else {
-				Forward_LeadChange(iClient, lm_ALONEONLEVEL, iClientsOnPreviousLevel, iClientsCntPreviousLevel);
-			}
-		}
-	} else {
-		//<iClient> gained <iAmount> level(s) and is now at level <iLevel>
-
-		new iPreviousLevel = iLevel - iAmount;
-
-		//everyone on the previous level is tied with each other  **2**
-		//	unless there is only one, he could be the new leader. **1**
-		//if no one is on the previous level, the new leaders are
-		//  the ones on the second highest level
-		new iClientsCntPreviousLevel = 0;
-		new iClientsOnPreviousLevel[MAXPLAYERS+1];
-		new iClientsCntSameLevel = 0;
-		new iClientsOnSameLevel[MAXPLAYERS+1];
-		new iClientsCntSecondHighestLevel = 0;
-		new iClientsOnSecondHighestLevel[MAXPLAYERS+1];
-
-		new iSecondHighestLeaderLevel = 0;
-		for(new client=1; client <= MaxClients; client++) {
-			new iHisLevel = lm_GetClientLevel(client);
-
-			if(iLeaderLevel < iHisLevel)
-				iLeaderLevel = iHisLevel;
-
-			if(iHisLevel > iSecondHighestLeaderLevel && iHisLevel != g_iLeaderLevel) {
-				iSecondHighestLeaderLevel = iHisLevel;
-				for(new i=0; i < iClientsCntSecondHighestLevel; i++)
-					iClientsOnSecondHighestLevel[i] = 0;
-
-				iClientsCntSecondHighestLevel = 0;
-			}
-
-			if(iHisLevel == iSecondHighestLeaderLevel) {
-				//client is on the second highest level
-				iClientsOnSecondHighestLevel[iClientsCntSecondHighestLevel] = client;
-				iClientsCntSecondHighestLevel++;
-			}
-
-			if(iHisLevel == iPreviousLevel) {
-				//client is on the previous level
-				iClientsOnPreviousLevel[iClientsCntPreviousLevel] = client;
-				iClientsCntPreviousLevel++;
-			}
-
-			if(iHisLevel == iLevel) {
-				//client is on the same level
-				iClientsOnSameLevel[iClientsCntSameLevel] = client;
-				iClientsCntSameLevel++;
-			}
-		}
-
-		if(iPreviousLevel == g_iLeaderLevel) {
-			//was a leader
-			if(iClientsCntPreviousLevel > 0) {
-				for(new i = 0; i < iClientsCntPreviousLevel; i++) {
-					Forward_LeadChange(iClientsOnPreviousLevel[i], lm_LOSTTHELEAD, iClientsOnSameLevel, iClientsCntSameLevel);
-				}
-
-				if(iClientsCntPreviousLevel > 1) {
-					for(new i = 0; i < iClientsCntPreviousLevel; i++) {
-						Forward_LeadChange(iClientsOnPreviousLevel[i], lm_TIEDONLEVEL, iClientsOnPreviousLevel, iClientsCntPreviousLevel);
-					}
-				} else {
-					Forward_LeadChange(iClient, lm_ALONEONLEVEL, iClientsOnPreviousLevel, iClientsCntPreviousLevel);
-				}
-			}
-		} else {
-			if(iLevel == iLeaderLevel) {
-				//FIXME: second heighest
-
-				if(iClientsCntSameLevel > 1) {
-					for(new i = 0; i < iClientsCntSameLevel; i++) {
-						Forward_LeadChange(iClientsOnSameLevel[i], lm_TIEDFORTHELEAD, iClientsOnSameLevel, iClientsCntSameLevel);
-					}
-				} else {
-					Forward_LeadChange(iClient, lm_TAKENTHELEAD, iClientsOnSameLevel, iClientsCntSameLevel);
-					iLeaderLevel = iLevel;
-				}
-
-				if(iClientsCntPreviousLevel == 1) {
-					//**1** iClientsOnPreviousLevel[0] has taken the lead
-					Forward_LeadChange(iClientsOnPreviousLevel[0], lm_ALONEONLEVEL, iClientsOnPreviousLevel, iClientsCntPreviousLevel);
-				}
-
-				if(iClientsCntPreviousLevel > 1) {
-					//**2** iClientsOnPreviousLevel[] are tied for the lead
-					for(new i = 0; i < iClientsCntPreviousLevel; i++) {
-						Forward_LeadChange(iClientsOnPreviousLevel[i], lm_TIEDONLEVEL, iClientsOnPreviousLevel, iClientsCntPreviousLevel);
-					}
-				}
-
-				if(iClientsCntPreviousLevel == 0) {
-				}
-			} else {
-				//was and is no leader
-				if(iClientsCntSameLevel > 1) {
-					for(new i = 0; i < iClientsCntSameLevel; i++) {
-						Forward_LeadChange(iClientsOnSameLevel[i], lm_TIEDONLEVEL, iClientsOnSameLevel, iClientsCntSameLevel);
-					}
-				} else {
-					Forward_LeadChange(iClient, lm_ALONEONLEVEL, iClientsOnSameLevel, iClientsCntSameLevel);
-					iLeaderLevel = iLevel;
-				}
-
-				if(iClientsCntPreviousLevel == 1) {
-					//**1** iClientsOnPreviousLevel[0] has taken the lead
-					Forward_LeadChange(iClientsOnPreviousLevel[0], lm_ALONEONLEVEL, iClientsOnPreviousLevel, iClientsCntPreviousLevel);
-				}
-
-				if(iClientsCntPreviousLevel > 1) {
-					//**2** iClientsOnPreviousLevel[] are tied for the lead
-					for(new i = 0; i < iClientsCntPreviousLevel; i++) {
-						Forward_LeadChange(iClientsOnPreviousLevel[i], lm_TIEDONLEVEL, iClientsOnPreviousLevel, iClientsCntPreviousLevel);
-					}
-				}
-			}
+			maybeWasLeader(client);
 		}
 	}
 
-	g_iLeaderLevel = iLeaderLevel;
-	LogMessage("The leader level is: %i", iLeaderLevel);
-	g_LeaderCount = getPlayersOnRank(iLeaderLevel, g_Leaders);
+}
+
+stock maybeWasLeader(client) {
+	if(g_bClientState[client][ISLEADER]) {
+		StateChange(client, ISLEADER, false);
+		StateChange(client, ISTIED, false);
+		g_bClientState[client][ISLEADER] = false;
+		g_bClientState[client][ISTIED] = false;
+	}
+}
+
+stock isLeaderNow(client) {
+	if(!g_bClientState[client][ISLEADER]) {
+		StateChange(client, ISLEADER, true);
+		g_bClientState[client][ISLEADER] = true;
+		g_bClientState[client][ISTIED] = false;
+	}
+}
+
+stock isTiedNow(client) {
+	if(!g_bClientState[client][ISTIED]) {
+		StateChange(client, ISTIED, true);
+		g_bClientState[client][ISTIED] = true;
+	}
+}
+
+stock StateChange(client, states:change, bool:yesno) {
+	if(change == ISLEADER) {
+		if(yesno) {
+			Forward_LeadChange(client, lm_TAKENTHELEAD);
+			LogMessage("%N has taken the lead", client);
+		} else {
+			Forward_LeadChange(client, lm_LOSTTHELEAD);
+			LogMessage("%N has lost the lead", client);
+		}
+	}
+
+	if(change == ISTIED) {
+		if(yesno) {
+			Forward_LeadChange(client, lm_TIEDFORTHELEAD);
+			LogMessage("%N is tied for the lead", client);
+		}
+	}
+}
+
+public lm_OnClientLevelUp(iClient,iLevel, iAmount, bool:isLevelDown) {
+	collectStates();
 }
 
 stock getPlayersOnRank(iLevel, tiedWith[], iExclude = 0) {
@@ -299,7 +121,7 @@ stock getPlayersOnRank(iLevel, tiedWith[], iExclude = 0) {
 
 
 //public lm_OnClientChangedLead(iClient, lm_LeaderChange:change, const String:tiedWith[]) {};
-public Forward_LeadChange(iClient, lm_LeaderChange:change, tiedWith[], size)
+public Forward_LeadChange(iClient, lm_LeaderChange:change)
 {
 	Call_StartForward(g_hForwardLeadChange);
 	Call_PushCell(iClient);

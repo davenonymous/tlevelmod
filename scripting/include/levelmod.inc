@@ -80,6 +80,20 @@ native lm_GetXpRequiredForLevel(iLevel);
 native lm_GetLevelMax();
 
 /**
+ * Returns the highest level a player who's currently on the server has reached
+ *
+ * @return			the highest level of a connected player
+ */
+native lm_GetLevelHighest();
+
+/**
+ * Returns the lowest level a player who's currently on the server has reached
+ *
+ * @return			the lowest level of a connected player
+ */
+native lm_GetLevelLowest();
+
+/**
  * Returns True if levelmod is enabled
  *
  * @return			is levelmod enabled?

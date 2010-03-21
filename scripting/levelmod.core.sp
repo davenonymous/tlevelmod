@@ -31,6 +31,10 @@ new g_iLevelMax;
 new g_iExpReqBase;
 new Float:g_fExpReqMult;
 
+new g_iLevelHighest;
+new g_iLevelLowest;
+
+
 ////////////////////////
 //P L U G I N  I N F O//
 ////////////////////////
@@ -173,7 +177,22 @@ stock CheckAndLevel(client) {
 	}
 
 	if(iCount > 0) {
+		CalculateBorders();
 		Forward_LevelChange(client, g_playerLevel[client], iCount, lvlDown);
+	}
+}
+
+stock CalculateBorders() {
+	g_iLevelHighest = 0;
+	g_iLevelLowest = MAXLEVELS;
+	for(new i = 1; i <= MaxClients; i++) {
+		if(g_playerLevel[i] > g_iLevelHighest) {
+			g_iLevelHighest = g_playerLevel[i];
+		}
+
+		if(g_playerLevel[i] < g_iLevelLowest) {
+			g_iLevelLowest = g_playerLevel[i];
+		}
 	}
 }
 
@@ -228,6 +247,9 @@ stock GiveXP(client, amount, iChannel)
 	CreateNative("lm_GetClientXPNext", Native_GetClientXPNext);
 	CreateNative("lm_GetXpRequiredForLevel", Native_GetClientXPForLevel);
 	CreateNative("lm_GetLevelMax", Native_GetLevelMax);
+
+	CreateNative("lm_GetLevelHighest", Native_GetLevelHighest);
+	CreateNative("lm_GetLevelLowest", Native_GetLevelLowest);
 
 	CreateNative("lm_IsEnabled", Native_GetEnabled);
 
@@ -309,6 +331,18 @@ public Native_GetClientXPNext(Handle:hPlugin, iNumParams)
 public Native_GetLevelMax(Handle:hPlugin, iNumParams)
 {
 	return g_iLevelMax;
+}
+
+//lm_GetLevelHighest();
+public Native_GetLevelHighest(Handle:hPlugin, iNumParams)
+{
+	return g_iLevelHighest;
+}
+
+//lm_GetLevelLowest();
+public Native_GetLevelLowest(Handle:hPlugin, iNumParams)
+{
+	return g_iLevelLowest;
 }
 
 //lm_IsEnabled();

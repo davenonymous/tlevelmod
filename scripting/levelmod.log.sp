@@ -11,9 +11,9 @@
 ////////////////////////
 public Plugin:myinfo =
 {
-	name = "Leveling Mod, List+Log",
+	name = "Leveling Mod, Log",
 	author = "Thrawn",
-	description = "A plugin for Leveling Mod, shows a list to admins and logs every levelup.",
+	description = "A plugin for Leveling Mod, logs every levelup and leveldown.",
 	version = PLUGIN_VERSION,
 	url = "http://thrawn.de"
 }

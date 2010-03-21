@@ -64,7 +64,7 @@ public Action:Timer_Advertisement(Handle:timer, any:client)
 
 public lm_OnClientLevelUp(iClient,iLevel, iAmount, bool:isLevelDown) {
 	if(isLevelDown)
-		CPrintToChatAllEx(iClient, "{teamcolor}%N{default} has been set back to: {green}Level %i", iClient, iLevel);
+		CPrintToChatAllEx(iClient, "{teamcolor}%N{default} has been set back to: {olive}Level %i", iClient, iLevel);
 	else
-		CPrintToChatAllEx(iClient, "{teamcolor}%N{default} has grown to: {green}Level %i", iClient, iLevel);
+		CPrintToChatAllEx(iClient, "{teamcolor}%N{default} has grown to: {olive}Level %i", iClient, iLevel);
 }

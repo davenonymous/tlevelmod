@@ -67,31 +67,16 @@ public lm_OnClientChangedLead(iClient, lm_LeaderChange:change) {
 		return;
 
 	new tiedWith[MAXPLAYERS+1];
-	new count = getPlayersOnRank(lm_GetClientLevel(iClient), tiedWith);
+	new count = getPlayersOnRank(lm_GetClientLevel(iClient), tiedWith, iClient);
 
 	switch(change) {
-		case lm_ALONEONLEVEL: {
-		}
-
-		case lm_TIEDONLEVEL: {
-			decl String:sMessage[255];
-			Format(sMessage, 255, "You are tied with ");
-
-			for(new i = 0; i < count; i++) {
-				if(IsClientInGame(tiedWith[i]))
-					Format(sMessage, 255, "%s{teamcolor}%N{default}%s", sMessage, tiedWith[i], i+1 == count ? "" : ", ");
-			}
-
-
-			CPrintToChat(iClient, sMessage);
-		}
-
 		case lm_TAKENTHELEAD: {
-			CPrintToChat(iClient, "You have taken the lead!");
+			//CPrintToChat(iClient, "You have taken the lead!");
+			CPrintToChatAllEx(iClient, "{teamcolor}%N{default} has taken the lead!", iClient);
 		}
 
 		case lm_LOSTTHELEAD: {
-			CPrintToChat(iClient, "You have lost the lead!");
+			CPrintToChat(iClient, "{red}You have lost the lead!");
 		}
 
 		case lm_TIEDFORTHELEAD: {
@@ -100,7 +85,7 @@ public lm_OnClientChangedLead(iClient, lm_LeaderChange:change) {
 
 			for(new i = 0; i < count; i++) {
 				if(IsClientInGame(tiedWith[i]))
-					Format(sMessage, 255, "%s{teamcolor}%N{default}%s", sMessage, tiedWith[i], i+1 == count ? "" : ", ");
+					Format(sMessage, 255, "%s{olive}%N{default}%s", sMessage, tiedWith[i], i+1 == count ? "" : ", ");
 			}
 
 			CPrintToChat(iClient, sMessage);
