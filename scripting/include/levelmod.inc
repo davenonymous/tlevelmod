@@ -93,6 +93,11 @@ native lm_GetLevelHighest();
  */
 native lm_GetLevelLowest();
 
+native lm_ForceExpReqBase(iExpReqBase);
+native lm_ForceExpReqMult(Float:fExpReqBase);
+native lm_ForceLevelDefault(iExpReqBase);
+native lm_ForceLevelMax(iExpReqBase);
+
 /**
  * Returns True if levelmod is enabled
  *

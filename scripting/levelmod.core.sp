@@ -31,6 +31,11 @@ new g_iLevelMax;
 new g_iExpReqBase;
 new Float:g_fExpReqMult;
 
+new g_iLevelMaxForced = -1;
+new g_iLevelDefaultForced = -1;
+new g_iExpReqBaseForced = -1;
+new Float:g_fExpReqMultForced = -1.0;
+
 new g_iLevelHighest;
 new g_iLevelLowest;
 
@@ -81,11 +86,10 @@ public OnConfigsExecuted()
 {
 	g_bEnabled = GetConVarBool(g_hCvarEnable);
 
-	g_iLevelDefault = GetConVarInt(g_hCvarLevel_default);
-	g_iLevelMax = GetConVarInt(g_hCvarLevel_max);
-
-	g_iExpReqBase = GetConVarInt(g_hCvarExp_ReqBase);
-	g_fExpReqMult = GetConVarFloat(g_hCvarExp_ReqMulti);
+	g_iLevelMax = g_iLevelMaxForced == -1 ? GetConVarInt(g_hCvarLevel_max) : g_iLevelMaxForced;
+	g_iExpReqBase = g_iExpReqBaseForced == -1 ? GetConVarInt(g_hCvarExp_ReqBase) : g_iExpReqBaseForced;
+	g_fExpReqMult = g_fExpReqMultForced == -1.0 ? GetConVarFloat(g_hCvarExp_ReqMulti) : g_fExpReqMultForced;
+	g_iLevelDefault = g_iLevelDefaultForced == -1 ? GetConVarInt(g_hCvarLevel_default) : g_iLevelDefaultForced;
 
 	FillXPForLevel();
 }
@@ -251,6 +255,11 @@ stock GiveXP(client, amount, iChannel)
 	CreateNative("lm_GetLevelHighest", Native_GetLevelHighest);
 	CreateNative("lm_GetLevelLowest", Native_GetLevelLowest);
 
+	CreateNative("lm_ForceExpReqBase", Native_ForceExpReqBase);
+	CreateNative("lm_ForceExpReqMult", Native_ForceExpReqMult);
+	CreateNative("lm_ForceLevelDefault", Native_ForceLevelDefault);
+	CreateNative("lm_ForceLevelMax", Native_ForceLevelMax);
+
 	CreateNative("lm_IsEnabled", Native_GetEnabled);
 
 
@@ -358,6 +367,40 @@ public Native_GetClientXPForLevel(Handle:hPlugin, iNumParams)
 
 	return GetMinXPForLevel(iLevel);
 }
+
+//lm_ForceLevelMax(iClient, iXP);
+public Native_ForceLevelMax(Handle:hPlugin, iNumParams)
+{
+	if(GetNativeCell(1) < g_iLevelMaxForced || g_iLevelMaxForced == -1)
+		g_iLevelMaxForced = GetNativeCell(1);
+}
+
+//lm_ForceLevelDefault(iClient, iXP);
+public Native_ForceLevelDefault(Handle:hPlugin, iNumParams)
+{
+	g_iLevelDefaultForced = GetNativeCell(1);
+}
+
+//lm_ForceExpReqBase(iClient, iXP);
+public Native_ForceExpReqBase(Handle:hPlugin, iNumParams)
+{
+	g_iExpReqBaseForced = GetNativeCell(1);
+}
+
+//lm_ForceExpReqMult(iClient, iXP);
+public Native_ForceExpReqMult(Handle:hPlugin, iNumParams)
+{
+	g_fExpReqMultForced = GetNativeCell(1);
+}
+
+
+/*
+new g_iLevelMaxForced = -1;
+new g_iLevelDefaultForced = -1;
+new g_iExpReqBaseForced = -1;
+new Float:g_fExpReqMultForced = -1.0;
+*/
+
 
 //public lm_OnClientLevelUp(iClient, iLevel, iAmount, bool:isLevelDown) {};
 public Forward_LevelChange(client, level, amount, bool:isLevelDown)

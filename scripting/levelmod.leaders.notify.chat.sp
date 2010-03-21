@@ -17,33 +17,6 @@ public Plugin:myinfo =
 	url = "http://thrawn.de"
 }
 
-public OnPluginStart()
-{
-}
-
-public OnConfigsExecuted()
-{
-}
-
-public Cvar_Changed(Handle:convar, const String:oldValue[], const String:newValue[]) {
-	OnConfigsExecuted();
-}
-
-
-public OnClientPutInServer(client)
-{
-	if(lm_IsEnabled())
-	{
-	}
-}
-
-public OnClientDisconnect(client)
-{
-	if(lm_IsEnabled())
-	{
-	}
-}
-
 stock getPlayersOnRank(iLevel, tiedWith[], iExclude = 0) {
 	new count = 0;
 	for(new client=1; client <= MaxClients; client++) {
@@ -71,7 +44,6 @@ public lm_OnClientChangedLead(iClient, lm_LeaderChange:change) {
 
 	switch(change) {
 		case lm_TAKENTHELEAD: {
-			//CPrintToChat(iClient, "You have taken the lead!");
 			CPrintToChatAllEx(iClient, "{teamcolor}%N{default} has taken the lead!", iClient);
 		}
 
