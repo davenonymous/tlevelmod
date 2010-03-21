@@ -3,8 +3,7 @@
 #endif
 #define _levelmod_included_
 
-#define LEVELMODAPIVERSION 1
-
+#define LEVELMODAPIVERSION 2
 
 /**
  * Get a clients level
@@ -22,7 +21,6 @@ native lm_GetClientLevel(iClient);
  * @return			Nothing.
  */
 native lm_SetClientLevel(iClient, iLevel);
-
 
 /**
  * Get a clients xp

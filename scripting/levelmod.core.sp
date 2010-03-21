@@ -69,7 +69,7 @@ public OnPluginStart()
 	HookConVarChange(g_hCvarExp_ReqMulti, Cvar_Changed);
 
 	// F O R W A R D S //
-	g_hForwardLevelUp = CreateGlobalForward("lm_OnClientLevelUp", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
+	g_hForwardLevelUp = CreateGlobalForward("lm_OnClientLevelUp", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 	g_hForwardXPGained = CreateGlobalForward("lm_OnClientExperience", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
 }
 
@@ -102,7 +102,7 @@ stock FillXPForLevel() {
 //////////////////////////////////
 //C L I E N T  C O N N E C T E D//
 //////////////////////////////////
-public OnClientConnected(client)
+public OnClientAuthorized(client, const String:auth[])
 {
 	if(g_bEnabled)
 	{
@@ -149,7 +149,7 @@ stock CheckAndLevel(client) {
 	//check level down
 	while(g_playerExp[client] < GetMinXPForLevel(g_playerLevel[client]) && g_playerLevel[client] > 0)
 	{
-		LogMessage("Player is not level %i anymore, (%i < %i)", g_playerLevel[client], g_playerExp[client], GetMinXPForLevel(g_playerLevel[client]));
+		LogMessage("Player %N is not level %i anymore, (%i < %i)", client, g_playerLevel[client], g_playerExp[client], GetMinXPForLevel(g_playerLevel[client]));
 
 		g_playerLevel[client]--;
 		iCount++;

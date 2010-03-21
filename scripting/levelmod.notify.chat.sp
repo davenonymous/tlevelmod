@@ -15,7 +15,7 @@ new bool:g_bAnnounce;
 public Plugin:myinfo =
 {
 	name = "Leveling Mod, Chat Notifications",
-	author = "noodleboy347, Thrawn",
+	author = "Thrawn",
 	description = "A plugin for Leveling Mod providing chat notifications to players when they level up",
 	version = PLUGIN_VERSION,
 	url = "http://thrawn.de"
