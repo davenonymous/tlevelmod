@@ -67,7 +67,7 @@ public OnPluginStart()
 	g_hCvarLevel_max = CreateConVar("sm_lm_level_max", "100", "Maximum level players can reach", FCVAR_PLUGIN, true, 1.0, true, FMAXLEVELS);
 
 	g_hCvarExp_ReqBase = CreateConVar("sm_lm_exp_reqbase", "100", "Experience required for the first level", FCVAR_PLUGIN, true, 1.0);
-	g_hCvarExp_ReqMulti = CreateConVar("sm_lm_exp_reqmulti", "1.0", "Experience required grows by this multiplier every level", FCVAR_PLUGIN, true, 1.0);
+	g_hCvarExp_ReqMulti = CreateConVar("sm_lm_exp_reqmulti", "1.2", "Experience required grows by this multiplier every level", FCVAR_PLUGIN, true, 1.0);
 
 	HookConVarChange(g_hCvarEnable, Cvar_Changed);
 

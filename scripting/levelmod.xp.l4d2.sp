@@ -48,6 +48,7 @@ public OnPluginStart()
 	g_hCvarXPForZombieKill = CreateConVar("sm_lm_exp_zombiekill", "2", "Amount of xp given for killing a common zombie", FCVAR_PLUGIN, true, 0.0);
 	g_hCvarXPForSaving = CreateConVar("sm_lm_exp_saving", "20", "Amount of xp given for saving an incapped player", FCVAR_PLUGIN, true, 0.0);
 	g_hCvarXPForTankKill = CreateConVar("sm_lm_exp_tankkill", "30", "Amount of xp given for killing a tank", FCVAR_PLUGIN, true, 0.0);
+	g_hCvarXPForIncapacitating = CreateConVar("sm_lm_exp_incap", "10", "Amount of xp given for incapacitating", FCVAR_PLUGIN, true, 0.0);
 
 	HookEvent("tank_killed", Event_TankKill);
 

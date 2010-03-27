@@ -82,20 +82,22 @@ stock isTiedNow(client) {
 }
 
 stock StateChange(client, states:change, bool:yesno) {
-	if(change == ISLEADER) {
-		if(yesno) {
-			Forward_LeadChange(client, lm_TAKENTHELEAD);
-			LogMessage("%N has taken the lead", client);
-		} else {
-			Forward_LeadChange(client, lm_LOSTTHELEAD);
-			LogMessage("%N has lost the lead", client);
+	if(IsClientInGame(client)) {
+		if(change == ISLEADER) {
+			if(yesno) {
+				Forward_LeadChange(client, lm_TAKENTHELEAD);
+				LogMessage("%N has taken the lead", client);
+			} else {
+				Forward_LeadChange(client, lm_LOSTTHELEAD);
+				LogMessage("%N has lost the lead", client);
+			}
 		}
-	}
 
-	if(change == ISTIED) {
-		if(yesno) {
-			Forward_LeadChange(client, lm_TIEDFORTHELEAD);
-			LogMessage("%N is tied for the lead", client);
+		if(change == ISTIED) {
+			if(yesno) {
+				Forward_LeadChange(client, lm_TIEDFORTHELEAD);
+				LogMessage("%N is tied for the lead", client);
+			}
 		}
 	}
 }

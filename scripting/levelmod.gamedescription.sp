@@ -6,7 +6,7 @@
 
 public Plugin:myinfo =
 {
-	name = "Levelmod, SetGameDescription",
+	name = "Leveling Mod, SetGameDescription",
 	author = "Thrawn",
 	description = "A plugin for Levelmod, sets game description. Uses SDKHooks.",
 	version = PLUGIN_VERSION,
