@@ -55,7 +55,7 @@ public Event_Player_Death(Handle:event, const String:name[], bool:dontBroadcast)
 		new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 		new victim = GetClientOfUserId(GetEventInt(event, "userid"));
 
-		if(attacker != victim)
+		if(attacker != victim && attacker > 0 && attacker <= MaxClients && IsClientInGame(attacker))
 		{
 			lm_GiveXP(attacker, g_iExpOnKill, 1);
 		}
