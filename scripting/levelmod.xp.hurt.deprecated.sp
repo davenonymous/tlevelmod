@@ -1,4 +1,3 @@
-//DC
 #include <sourcemod>
 #include <sdktools>
 #include <levelmod>
@@ -7,7 +6,6 @@
 
 #pragma semicolon 1
 #define PLUGIN_VERSION "0.1.0"
-
 
 new Handle:g_hCvarExpMult;
 new Handle:g_hCvarMaxXP;
