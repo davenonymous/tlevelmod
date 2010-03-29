@@ -56,7 +56,7 @@ public Action:OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damage
 	{
 		new amount = RoundFloat(damage * g_fExpMult);
 
-		if(amount > 0 && IsClientInGame(attacker) && attacker != victim && lm_GetClientLevel(attacker) < lm_GetLevelMax())
+		if(amount > 0 && attacker > 0 && attacker <= MaxClients && IsClientInGame(attacker) && attacker != victim && lm_GetClientLevel(attacker) < lm_GetLevelMax())
 		{
 			if(amount > g_iMaxXP)
 				amount = g_iMaxXP;
