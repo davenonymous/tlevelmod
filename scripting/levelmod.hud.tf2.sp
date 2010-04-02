@@ -9,7 +9,7 @@
 #define ATTACH_NORMAL		1
 #define ATTACH_HEAD		2
 
-#define PLUGIN_VERSION "0.1.0"
+#define PLUGIN_VERSION "0.1.1"
 #define SOUND_LEVELUP "misc/achievement_earned.wav"
 
 new Handle:g_hCvarLevelUpParticles;
