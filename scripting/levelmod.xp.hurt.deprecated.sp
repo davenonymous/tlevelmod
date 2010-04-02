@@ -30,7 +30,7 @@ public OnPluginStart()
 	g_hCvarExpMult = CreateConVar("sm_lm_exp_dmgmulti", "0.1", "Damage multiplied by this value will be given as xp", FCVAR_PLUGIN, true, 0.0);
 	g_hCvarMaxXP = CreateConVar("sm_lm_exp_maxbydmg", "10", "Maximum amount of xp given through damage, 0 = unlimited", FCVAR_PLUGIN, true, 0.0);
 	HookConVarChange(g_hCvarExpMult, Cvar_Changed);
-
+	HookConVarChange(g_hCvarMaxXP, Cvar_Changed);
 	HookEvent("player_hurt", Event_Player_Hurt);
 }
 
