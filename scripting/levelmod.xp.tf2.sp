@@ -13,16 +13,34 @@ new Handle:g_hCvarXPForCapping;
 new Handle:g_hCvarXPForWinning;
 new Handle:g_hCvarXPForFlagPickup;
 new Handle:g_hCvarXPForFlagCap;
+new Handle:g_hCvarXPForChargeDeployed;
+new Handle:g_hCvarXPForTeleport;
+new Handle:g_hCvarXPForStunning;
+new Handle:g_hCvarXPForBuffing;
+new Handle:g_hCvarXPForDestroying;
+new Handle:g_hCvarXPForSapping;
+new Handle:g_hCvarXPForMVP;
+new Handle:g_hCvarXPForDeflect;
+new Handle:g_hCvarXPForItemCrafted;
 
 new g_iHealPointCache[MAXPLAYERS+1];
 new g_iHealsOff;
 new Float:g_fHealExpMult;
 
+new g_iXPForBuffing;
 new g_iXPForChargeKill;
 new g_iXPForCapping;
 new g_iXPForWinning;
 new g_iXPForFlagPickup;
 new g_iXPForFlagCap;
+new g_iXPForChargeDeployed;
+new g_iXPForTeleport;
+new g_iXPForStunning;
+new g_iXPForDestroying;
+new g_iXPForSapping;
+new g_iXPForMVP;
+new g_iXPForDeflect;
+new g_iXPForItemCrafted;
 
 ////////////////////////
 //P L U G I N  I N F O//
@@ -56,6 +74,15 @@ public OnPluginStart()
 	g_hCvarXPForWinning = CreateConVar("sm_lm_exp_winning", "20", "Amount of xp given for winning a round", FCVAR_PLUGIN, true, 0.0);
 	g_hCvarXPForFlagPickup = CreateConVar("sm_lm_exp_flag_pickup", "5", "Amount of xp given for picking up a flag", FCVAR_PLUGIN, true, 0.0);
 	g_hCvarXPForFlagCap = CreateConVar("sm_lm_exp_flag_cap", "10", "Amount of xp given for capturing a flag", FCVAR_PLUGIN, true, 0.0);
+	g_hCvarXPForChargeDeployed = CreateConVar("sm_lm_exp_chargedeployed", "10", "Amount of xp given for deploying a charge", FCVAR_PLUGIN, true, 0.0);
+	g_hCvarXPForTeleport = CreateConVar("sm_lm_exp_teleport", "2", "Amount of xp given to the builder when a player uses a teleporter", FCVAR_PLUGIN, true, 0.0);
+	g_hCvarXPForStunning = CreateConVar("sm_lm_exp_stunning", "5", "Amount of xp given for stunning a player (doubles on big stun)", FCVAR_PLUGIN, true, 0.0);
+	g_hCvarXPForBuffing = CreateConVar("sm_lm_exp_buffing", "5", "Amount of xp given for deploying a buff banner", FCVAR_PLUGIN, true, 0.0);
+	g_hCvarXPForDestroying = CreateConVar("sm_lm_exp_destroying", "10", "Amount of xp given for destroying a building", FCVAR_PLUGIN, true, 0.0);
+	g_hCvarXPForSapping = CreateConVar("sm_lm_exp_sapping", "5", "Amount of xp given for sapping a building", FCVAR_PLUGIN, true, 0.0);
+	g_hCvarXPForMVP = CreateConVar("sm_lm_exp_mvp", "20", "Amount of xp given to the MVPs at the end of each round", FCVAR_PLUGIN, true, 0.0);
+	g_hCvarXPForDeflect = CreateConVar("sm_lm_exp_deflect", "5", "Amount of xp given for deflecting a projectile", FCVAR_PLUGIN, true, 0.0);
+	g_hCvarXPForItemCrafted = CreateConVar("sm_lm_exp_crafting", "5", "Amount of xp given for crafting an item", FCVAR_PLUGIN, true, 0.0);
 
 	HookConVarChange(g_hCvarHealExpMult, Cvar_Changed);
 	HookConVarChange(g_hCvarXPForChargeKill, Cvar_Changed);
@@ -63,12 +90,29 @@ public OnPluginStart()
 	HookConVarChange(g_hCvarXPForWinning, Cvar_Changed);
 	HookConVarChange(g_hCvarXPForFlagPickup, Cvar_Changed);
 	HookConVarChange(g_hCvarXPForFlagCap, Cvar_Changed);
+	HookConVarChange(g_hCvarXPForChargeDeployed, Cvar_Changed);
+	HookConVarChange(g_hCvarXPForTeleport, Cvar_Changed);
+	HookConVarChange(g_hCvarXPForStunning, Cvar_Changed);
+	HookConVarChange(g_hCvarXPForDestroying, Cvar_Changed);
+	HookConVarChange(g_hCvarXPForSapping, Cvar_Changed);
+	HookConVarChange(g_hCvarXPForMVP, Cvar_Changed);
+	HookConVarChange(g_hCvarXPForDeflect, Cvar_Changed);
+	HookConVarChange(g_hCvarXPForItemCrafted, Cvar_Changed);
 
 	HookEvent("player_death", Event_Player_Death);
 	HookEvent("medic_death", Event_Medic_Death);
 	HookEvent("teamplay_point_captured", Event_Captured, EventHookMode_Post);
 	HookEvent("teamplay_flag_event", Event_Flag, EventHookMode_Post);
 	HookEvent("teamplay_round_win", Event_RoundWin);
+	HookEvent("player_chargedeployed", Event_ChargeDeployed);
+	HookEvent("player_teleported", Event_PlayerTeleported);
+	HookEvent("player_stunned", Event_PlayerStunned);
+	HookEvent("deploy_buff_banner", Event_BuffBanner);
+	HookEvent("object_deflected", Event_Deflect);
+	HookEvent("player_mvp", Event_MVP);
+	HookEvent("item_found", Event_ItemFound);
+	HookEvent("player_sapped_object", Event_Sapped);
+	HookEvent("object_destroyed", Event_BuildingKill);
 }
 
 public OnConfigsExecuted()
@@ -79,6 +123,16 @@ public OnConfigsExecuted()
 	g_iXPForWinning = GetConVarInt(g_hCvarXPForWinning);
 	g_iXPForFlagPickup = GetConVarInt(g_hCvarXPForFlagPickup);
 	g_iXPForFlagCap = GetConVarInt(g_hCvarXPForFlagCap);
+	g_iXPForChargeDeployed = GetConVarInt(g_hCvarXPForChargeDeployed);
+	g_iXPForTeleport = GetConVarInt(g_hCvarXPForTeleport);
+	g_iXPForStunning = GetConVarInt(g_hCvarXPForStunning);
+	g_iXPForBuffing = GetConVarInt(g_hCvarXPForBuffing);
+	g_iXPForDestroying = GetConVarInt(g_hCvarXPForDestroying);
+	g_iXPForSapping = GetConVarInt(g_hCvarXPForSapping);
+	g_iXPForMVP = GetConVarInt(g_hCvarXPForMVP);
+	g_iXPForDeflect = GetConVarInt(g_hCvarXPForDeflect);
+	g_iXPForItemCrafted = GetConVarInt(g_hCvarXPForItemCrafted);
+
 }
 
 public Cvar_Changed(Handle:convar, const String:oldValue[], const String:newValue[]) {
@@ -88,11 +142,136 @@ public Cvar_Changed(Handle:convar, const String:oldValue[], const String:newValu
 //////////////////////////
 //E V E N T   H O O K S //
 //////////////////////////
+public Event_Deflect(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(lm_IsEnabled())
+	{
+		new iActor = GetClientOfUserId(GetEventInt(event, "userid"));
+
+		if (!IsClientInGame(iActor))
+			return;
+
+		lm_GiveXP(iActor, g_iXPForDeflect, 1);
+	}
+}
+
+public Event_MVP(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(lm_IsEnabled())
+	{
+		new iActor = GetClientOfUserId(GetEventInt(event, "player"));
+
+		if (!IsClientInGame(iActor))
+			return;
+
+		lm_GiveXP(iActor, g_iXPForMVP, 1);
+	}
+}
+
+public Event_ItemFound(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(lm_IsEnabled())
+	{
+		new iActor = GetClientOfUserId(GetEventInt(event, "player"));
+
+		if (!IsClientInGame(iActor))
+			return;
+
+		if (!GetEventBool(event, "crafted"))
+			return;
+
+		lm_GiveXP(iActor, g_iXPForItemCrafted, 1);
+	}
+}
+
+public Event_Sapped(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(lm_IsEnabled())
+	{
+		new iActor = GetClientOfUserId(GetEventInt(event, "userid"));
+
+		if (!IsClientInGame(iActor))
+			return;
+
+		lm_GiveXP(iActor, g_iXPForSapping, 1);
+	}
+}
+
+public Event_BuildingKill(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(lm_IsEnabled())
+	{
+		new iActor = GetClientOfUserId(GetEventInt(event, "attacker"));
+
+		if (!IsClientInGame(iActor))
+			return;
+
+		if (!GetEventBool(event, "was_building"))
+			return;
+
+		lm_GiveXP(iActor, g_iXPForDestroying, 1);
+	}
+}
+
+public Event_BuffBanner(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(lm_IsEnabled())
+	{
+		new iBuffer = GetClientOfUserId(GetEventInt(event, "buff_owner"));
+
+		if (!IsClientInGame(iBuffer))
+			return;
+
+		lm_GiveXP(iBuffer, g_iXPForBuffing, 1);
+	}
+}
+
+public Event_PlayerStunned(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(lm_IsEnabled())
+	{
+		new iStunner = GetClientOfUserId(GetEventInt(event, "stunner"));
+		new iVictim = GetClientOfUserId(GetEventInt(event, "victim"));
+
+		if (!IsClientInGame(iStunner) || iStunner == iVictim)
+			return;
+
+		lm_GiveXP(iStunner, GetEventBool(event, "big_stun") ? g_iXPForStunning * 2 : g_iXPForStunning, 1);
+	}
+}
+
+public Event_PlayerTeleported(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(lm_IsEnabled())
+	{
+		new iBuilder = GetClientOfUserId(GetEventInt(event, "builderid"));
+		new iClient = GetClientOfUserId(GetEventInt(event, "userid"));
+
+		if (!IsClientInGame(iClient) || iBuilder == iClient)
+			return;
+
+		lm_GiveXP(iClient, g_iXPForTeleport, 1);
+	}
+}
+
+public Event_ChargeDeployed(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(lm_IsEnabled())
+	{
+		new iClient = GetClientOfUserId(GetEventInt(event, "userid"));
+
+		if (!IsClientInGame(iClient))
+			return;
+
+		lm_GiveXP(iClient, g_iXPForChargeDeployed, 1);
+	}
+}
+
 public Event_Flag(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(lm_IsEnabled())
 	{
-		new iClient = GetEventInt(event, "player");
+		new iClient = GetClientOfUserId(GetEventInt(event, "player"));
 		new iFlagStatus = GetEventInt(event, "eventtype");
 
 		if (!IsClientInGame(iClient))
@@ -200,3 +379,27 @@ DumpHeals(client)
 
 	g_iHealPointCache[client] = iTotalHealPoints;
 }
+
+
+/*
+stock AssignPointsToEvent(id, short, desc, event, key, defValue) {
+	HookEvent(event, Event_Box);
+
+	decl String:cvarName[64];
+	Format(cvarName, sizeof(cvarName), "sm_lm_exp_%s", short);
+
+	decl String:defValString[4];
+	Format(defValString, sizeof(defValString), "%i", defValue);
+
+	g_hCvarBox[id] = CreateConVar(cvarName, defValString, desc, FCVAR_PLUGIN, true, 0.0);
+}
+
+public Event_Box(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(lm_IsEnabled())
+	{
+
+		new iActor = GetClientOfUserId(GetEventInt(event,
+	}
+}
+*/
