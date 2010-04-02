@@ -68,7 +68,7 @@ public Event_Player_Death(Handle:event, const String:name[], bool:dontBroadcast)
 		new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 		new victim = GetClientOfUserId(GetEventInt(event, "userid"));
 
-		if(attacker != victim && attacker > 0 && attacker <= MaxClients)
+		if(attacker != victim && attacker > 0 && attacker <= MaxClients && victim > 0 && victim <= MaxClients)
 		{
 			CPrintToChatEx(victim, attacker, "You were killed by {teamcolor}%N {olive}(Level %i)", attacker, lm_GetClientLevel(attacker));
 		}
