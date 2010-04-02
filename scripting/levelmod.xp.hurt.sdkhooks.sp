@@ -1,7 +1,5 @@
 #include <sourcemod>
-#include <sdktools>
 #include <levelmod>
-#include <colors>
 #include <sdkhooks>
 
 #pragma semicolon 1

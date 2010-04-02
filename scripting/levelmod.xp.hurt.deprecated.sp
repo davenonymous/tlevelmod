@@ -1,7 +1,5 @@
 #include <sourcemod>
-#include <sdktools>
 #include <levelmod>
-#include <colors>
 
 #pragma semicolon 1
 #define PLUGIN_VERSION "0.1.0"
