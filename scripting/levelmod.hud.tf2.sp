@@ -1,6 +1,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <levelmod>
+#include <tf2_advanced>
 
 #pragma semicolon 1
 
@@ -148,7 +149,7 @@ public lm_OnClientLevelUp(client, level, amount, bool:isLevelDown)
 
 		EmitSoundToClient(client, SOUND_LEVELUP);
 
-		if(g_bLevelUpParticles) {
+		if(g_bLevelUpParticles && !TF2_IsPlayerCloaked(client)) {
 			//achieved
 			new Float:pos[3];
 			GetClientAbsOrigin(client, pos);
