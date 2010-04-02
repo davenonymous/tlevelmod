@@ -147,9 +147,12 @@ public lm_OnClientLevelUp(client, level, amount, bool:isLevelDown)
 	} else {
 		ShowSyncHudText(client, g_hHudLevelUp, "LEVEL UP!");
 
+		if(TF2_IsPlayerCloaked(client))
+			return;
+
 		EmitSoundToClient(client, SOUND_LEVELUP);
 
-		if(g_bLevelUpParticles && !TF2_IsPlayerCloaked(client)) {
+		if(g_bLevelUpParticles) {
 			//achieved
 			new Float:pos[3];
 			GetClientAbsOrigin(client, pos);
