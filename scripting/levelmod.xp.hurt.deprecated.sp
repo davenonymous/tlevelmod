@@ -2,7 +2,6 @@
 #include <sdktools>
 #include <levelmod>
 #include <colors>
-// *FIXME* If sdkhooks is loaded --> use OnTakeDamage hook as it is more reliable
 
 #pragma semicolon 1
 #define PLUGIN_VERSION "0.1.0"
@@ -31,7 +30,7 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
 	g_hCvarExpMult = CreateConVar("sm_lm_exp_dmgmulti", "0.1", "Damage multiplied by this value will be given as xp", FCVAR_PLUGIN, true, 0.0);
-	g_hCvarMaxXP = CreateConVar("sm_lm_exp_maxbydmg", "20", "Maximum amount of xp given through damage, 0 = unlimited", FCVAR_PLUGIN, true, 0.0);
+	g_hCvarMaxXP = CreateConVar("sm_lm_exp_maxbydmg", "10", "Maximum amount of xp given through damage, 0 = unlimited", FCVAR_PLUGIN, true, 0.0);
 	HookConVarChange(g_hCvarExpMult, Cvar_Changed);
 
 	HookEvent("player_hurt", Event_Player_Hurt);
@@ -59,7 +58,7 @@ public Event_Player_Hurt(Handle:event, const String:name[], bool:dontBroadcast)
 
 		if(amount > 0 && IsPlayerAlive(attacker) && attacker != victim && lm_GetClientLevel(attacker) < lm_GetLevelMax())
 		{
-			if(amount > g_iMaxXP)
+			if(amount > g_iMaxXP && g_iMaxXP != 0)
 				amount = g_iMaxXP;
 
 			lm_GiveXP(attacker, amount, 0);

@@ -58,7 +58,7 @@ public Action:OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damage
 
 		if(amount > 0 && attacker > 0 && attacker <= MaxClients && IsClientInGame(attacker) && attacker != victim && lm_GetClientLevel(attacker) < lm_GetLevelMax())
 		{
-			if(amount > g_iMaxXP)
+			if(amount > g_iMaxXP && g_iMaxXP != 0)
 				amount = g_iMaxXP;
 
 			lm_GiveXP(attacker, amount, 0);
