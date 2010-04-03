@@ -2,7 +2,6 @@
 #include <sdktools>
 #include <levelmod>
 #include <tf2_stocks>
-#include <colors>
 
 #pragma semicolon 1
 #define PLUGIN_VERSION "0.1.1"
