@@ -79,8 +79,8 @@ public OnPluginStart()
 	AssignPointsToEventCustom(Event_RoundWin, 		"winning", 	"Amount of xp given for winning a round",
 													"teamplay_point_captured", "20");
 
-	//AssignPointsToEventCustom(Event_Flag, 			"flag_pickup", 	"Amount of xp given for picking up a flag",
-	//												"teamplay_flag_event", "5");
+	AssignPointsToEventCustom(Event_Flag, 			"flag_pickup", 	"Amount of xp given for picking up a flag",
+													"teamplay_flag_event", "5");
 
 	AssignPointsToEventCustom(Event_Flag, 			"flag_cap", 	"Amount of xp given for capturing a flag",
 													"teamplay_flag_event", "10");

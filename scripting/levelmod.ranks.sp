@@ -12,6 +12,8 @@ new Handle:g_hCvarAnnounce;
 new Handle:g_hCvarRankFile;
 new bool:g_bAnnounceOnSpawn;
 
+new Handle:g_hTimerAdvertisement[MAXPLAYERS+1] = INVALID_HANDLE;
+
 new g_iRankCount = 0;
 new String:g_sRanks[MAXRANKS][127];
 new String:g_sRankFile[255];
@@ -56,15 +58,25 @@ public Event_Player_Spawn(Handle:event, const String:name[], bool:dontBroadcast)
 
 		if(client > 0 && client <= MaxClients && IsClientInGame(client))
 		{
-			new String:rank[127];
-			CPrintToChat(client, "Your rank is: {olive}%s", rank);
+			if(g_hTimerAdvertisement[client] == INVALID_HANDLE) {
+				g_hTimerAdvertisement[client] = CreateTimer(5.0, Timer_Advertisement, client);
+			}
 		}
 	}
 }
 
+public Action:Timer_Advertisement(Handle:timer, any:client)
+{
+	g_hTimerAdvertisement[client] = INVALID_HANDLE;
+
+	CPrintToChat(client, "Your rank is: {olive}%s", g_sRanks[lm_GetClientLevel(client)]);
+}
+
 public lm_OnClientLevelUp(iClient,iLevel, iAmount, bool:isLevelDown) {
-	if(!StrEqual(g_sRanks[iLevel], "") && iLevel <= g_iRankCount)
-		CPrintToChat(iClient, "Your rank is now: {olive}%s", g_sRanks[iLevel]);
+	LogMessage("levelup to %i (%s)", iLevel, g_sRanks[iLevel]);
+	if(!StrEqual(g_sRanks[iLevel], "") && iLevel <= g_iRankCount) {
+		CPrintToChat(iClient, "Your leveled up to rank: {olive}%s", g_sRanks[iLevel]);
+	}
 }
 
 stock ReadRanks(const String:file[]) {
@@ -89,8 +101,9 @@ stock ReadRanks(const String:file[]) {
 			KvGetString(g_hKv, sCnt, sRank, sizeof(sRank));
 
 			g_sRanks[cnt] = sRank;
+			LogMessage("Rank %i is %s", cnt, sRank);
 			cnt++;
-		} while(KvGotoNextKey(g_hKv));
+		} while(!StrEqual(sRank,""));
 	} else {
 		LogError("File Not Found: %s", path);
 	}
