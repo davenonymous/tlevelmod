@@ -54,7 +54,7 @@ public Event_Player_Hurt(Handle:event, const String:name[], bool:dontBroadcast)
 		new rawDamage = (GetEventInt(event, "damageamount"));
 		new amount = RoundFloat(rawDamage * g_fExpMult);
 
-		if(amount > 0 && IsPlayerAlive(attacker) && attacker != victim && lm_GetClientLevel(attacker) < lm_GetLevelMax())
+		if(amount > 0 && IsPlayerAlive(attacker) && attacker != victim && GetClientTeam(attacker) != GetClientTeam(victim) && lm_GetClientLevel(attacker) < lm_GetLevelMax())
 		{
 			if(amount > g_iMaxXP && g_iMaxXP != 0)
 				amount = g_iMaxXP;
