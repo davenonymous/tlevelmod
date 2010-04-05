@@ -48,7 +48,7 @@ public OnClientPutInServer(client)
 	if(lm_IsEnabled())
 	{
 		if(g_bAnnounce)
-			g_hTimerAdvertisement[client] = CreateTimer(60.0, Timer_Advertisement, client);
+			g_hTimerAdvertisement[client] = CreateTimer(60.0, Timer_Advertisement, client, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
 

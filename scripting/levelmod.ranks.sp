@@ -59,7 +59,7 @@ public Event_Player_Spawn(Handle:event, const String:name[], bool:dontBroadcast)
 		if(client > 0 && client <= MaxClients && IsClientInGame(client))
 		{
 			if(g_hTimerAdvertisement[client] == INVALID_HANDLE) {
-				g_hTimerAdvertisement[client] = CreateTimer(5.0, Timer_Advertisement, client);
+				g_hTimerAdvertisement[client] = CreateTimer(5.0, Timer_Advertisement, client, TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 	}
@@ -69,7 +69,8 @@ public Action:Timer_Advertisement(Handle:timer, any:client)
 {
 	g_hTimerAdvertisement[client] = INVALID_HANDLE;
 
-	CPrintToChat(client, "Your rank is: {olive}%s", g_sRanks[lm_GetClientLevel(client)]);
+	if(client > 0 && client <= MaxClients && IsClientInGame(client))
+		CPrintToChat(client, "Your rank is: {olive}%s", g_sRanks[lm_GetClientLevel(client)]);
 }
 
 public lm_OnClientLevelUp(iClient,iLevel, iAmount, bool:isLevelDown) {
@@ -95,15 +96,17 @@ stock ReadRanks(const String:file[]) {
 		decl String:sRank[127];
 		KvGotoFirstSubKey(g_hKv);
 
-		do {
+		for(;;) {
 			new String:sCnt[4];
 			IntToString(cnt, sCnt, sizeof(sCnt));
 			KvGetString(g_hKv, sCnt, sRank, sizeof(sRank));
 
+			if(StrEqual(sRank,""))
+				break;
+
 			g_sRanks[cnt] = sRank;
-			LogMessage("Rank %i is %s", cnt, sRank);
 			cnt++;
-		} while(!StrEqual(sRank,""));
+		}
 	} else {
 		LogError("File Not Found: %s", path);
 	}
