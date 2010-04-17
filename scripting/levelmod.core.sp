@@ -157,7 +157,7 @@ stock CheckAndLevel(client) {
 	//check level down
 	while(g_playerExp[client] < GetMinXPForLevel(g_playerLevel[client]) && g_playerLevel[client] > 0)
 	{
-		LogMessage("Player %N is not level %i anymore, (%i < %i)", client, g_playerLevel[client], g_playerExp[client], GetMinXPForLevel(g_playerLevel[client]));
+		//LogMessage("Player %N is not level %i anymore, (%i < %i)", client, g_playerLevel[client], g_playerExp[client], GetMinXPForLevel(g_playerLevel[client]));
 
 		g_playerLevel[client]--;
 		iCount++;
@@ -169,7 +169,7 @@ stock CheckAndLevel(client) {
 	//check level up
 	while(!lvlDown && g_playerExp[client] >= g_playerExpNext[client] && g_playerLevel[client] < g_iLevelMax && g_playerExpNext[client] != -1)
 	{
-		LogMessage("Player is not level %i anymore, (%i >= %i)", g_playerLevel[client], g_playerExp[client], g_playerExpNext[client]);
+		//LogMessage("Player is not level %i anymore, (%i >= %i)", g_playerLevel[client], g_playerExp[client], g_playerExpNext[client]);
 
 		g_playerLevel[client]++;
 		iCount++;
