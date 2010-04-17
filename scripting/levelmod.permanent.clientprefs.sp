@@ -66,14 +66,8 @@ stock loadValues(client) {
 	g_bValuesLoaded[client] = true;
 }
 
-
-/////////////////////
-//S A V E  T O  D B//
-/////////////////////
-public OnClientDisconnect(client)
-{
-	new iXP = lm_GetClientXP(client);
-	new iLevel = lm_GetClientLevel(client);
+public lm_OnClientLevelUp(iClient,iLevel, iAmount, bool:isLevelDown) {
+	new iXP = lm_GetClientXP(iClient);
 
 	if(iLevel >= 0) {
 		new String:sXP[20];
@@ -82,8 +76,24 @@ public OnClientDisconnect(client)
 		new String:sLevel[6];
 		Format(sLevel, sizeof(sLevel), "%i", iLevel);
 
-		LogMessage("Writing client cookie: level %i, xp: %i", iLevel, iXP);
-		SetClientCookie(client, db_level, sLevel);
+		LogMessage("Writing %N cookie: level %i, xp: %i", iClient, iLevel, iXP);
+		SetClientCookie(iClient, db_level, sLevel);
+		SetClientCookie(iClient, db_xp, sXP);
+	}
+}
+
+/////////////////////
+//S A V E  T O  D B//
+/////////////////////
+public OnClientDisconnect(client)
+{
+	new iXP = lm_GetClientXP(client);
+
+	if(iXP >= 0) {
+		new String:sXP[20];
+		Format(sXP, sizeof(sXP), "%i", iXP);
+
+		LogMessage("Writing client cookie: xp: %i", iXP);
 		SetClientCookie(client, db_xp, sXP);
 	}
 }
