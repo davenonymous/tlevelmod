@@ -94,6 +94,14 @@ native lm_GetLevelHighest();
  */
 native lm_GetLevelLowest();
 
+/**
+ * Sets a flag to a client helping the core not to override loaded values with defaults
+ *
+ * @param iClient		The client to set the flag to
+ * @param bState		If set to true, the defaults wont be loaded.
+ */
+native lm_SetDataLoadedExternally(iClient, bool:bState);
+
 native lm_ForceExpReqBase(iExpReqBase);
 native lm_ForceExpReqMult(Float:fExpReqBase);
 native lm_ForceLevelDefault(iExpReqBase);

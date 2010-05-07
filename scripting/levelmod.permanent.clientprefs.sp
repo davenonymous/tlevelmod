@@ -34,6 +34,7 @@ public OnPluginStart()
 //L O A D  F R O M  D B//
 /////////////////////////
 public OnClientCookiesCached(client) {
+	lm_SetDataLoadedExternally(client, true);
 	loadValues(client);
 }
 

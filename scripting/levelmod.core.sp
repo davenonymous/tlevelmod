@@ -10,6 +10,7 @@
 new g_playerLevel[MAXPLAYERS+1];
 new g_playerExp[MAXPLAYERS+1];
 new g_playerExpNext[MAXPLAYERS+1];
+new g_bClientDataLoadedExternally[MAXPLAYERS+1];
 
 new Handle:g_hTimerCheckLevelUp[MAXPLAYERS+1] = INVALID_HANDLE;
 new Handle:g_hCvarEnable;
@@ -112,7 +113,7 @@ stock FillXPForLevel() {
 //////////////////////////////////
 public OnClientAuthorized(client, const String:auth[])
 {
-	if(g_bEnabled)
+	if(g_bEnabled && !g_bClientDataLoadedExternally[client])
 	{
 		g_playerLevel[client] = g_iLevelDefault;
 		g_playerExp[client] = GetMinXPForLevel(g_iLevelDefault);
@@ -145,6 +146,8 @@ public OnClientDisconnect(client)
 	{
 		if(g_hTimerCheckLevelUp[client]!=INVALID_HANDLE)
 			CloseHandle(g_hTimerCheckLevelUp[client]);
+
+		g_bClientDataLoadedExternally[client] = false;
 	}
 }
 
@@ -260,6 +263,8 @@ stock GiveXP(client, amount, iChannel)
 	CreateNative("lm_ForceLevelDefault", Native_ForceLevelDefault);
 	CreateNative("lm_ForceLevelMax", Native_ForceLevelMax);
 
+	CreateNative("lm_SetDataLoadedExternally", Native_SetDataLoadedExternally);
+
 	CreateNative("lm_IsEnabled", Native_GetEnabled);
 
 
@@ -298,7 +303,6 @@ public Native_SetClientLevel(Handle:hPlugin, iNumParams)
 
 	SetLevel(iClient, iLevel);
 }
-
 
 //lm_SetClientXP(iClient, iXP);
 public Native_SetClientXP(Handle:hPlugin, iNumParams)
@@ -391,6 +395,15 @@ public Native_ForceExpReqBase(Handle:hPlugin, iNumParams)
 public Native_ForceExpReqMult(Handle:hPlugin, iNumParams)
 {
 	g_fExpReqMultForced = GetNativeCell(1);
+}
+
+//lm_SetDataLoadedExternally(iClient, bool:bState);
+public Native_SetDataLoadedExternally(Handle:hPlugin, iNumParams)
+{
+	new iClient = GetNativeCell(1);
+	new bool:bState = GetNativeCell(2);
+
+	g_bClientDataLoadedExternally[iClient] = bState;
 }
 
 
