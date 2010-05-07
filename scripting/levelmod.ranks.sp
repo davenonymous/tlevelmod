@@ -69,7 +69,7 @@ public Action:Timer_Advertisement(Handle:timer, any:client)
 {
 	g_hTimerAdvertisement[client] = INVALID_HANDLE;
 
-	if(client > 0 && client <= MaxClients && IsClientInGame(client))
+	if(client > 0 && client <= MaxClients && IsClientInGame(client) && !(StrEqual(g_sRanks[lm_GetClientLevel(client)],"")))
 		CPrintToChat(client, "Your rank is: {olive}%s", g_sRanks[lm_GetClientLevel(client)]);
 }
 
