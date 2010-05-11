@@ -173,7 +173,7 @@ public Event_ItemFound(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		new iActor = GetClientOfUserId(GetEventInt(event, "player"));
 
-		if (!IsClientInGame(iActor))
+		if (iActor == 0 || iActor > MaxClients || !IsClientInGame(iActor))
 			return;
 
 		if (!GetEventBool(event, "crafted"))
@@ -232,7 +232,7 @@ public Event_PlayerStunned(Handle:event, const String:name[], bool:dontBroadcast
 		new iStunner = GetClientOfUserId(GetEventInt(event, "stunner"));
 		new iVictim = GetClientOfUserId(GetEventInt(event, "victim"));
 
-		if (!IsClientInGame(iStunner) || iStunner == iVictim)
+		if (iStunner == 0 || iStunner > MaxClients || !IsClientInGame(iStunner) || iStunner == iVictim)
 			return;
 
 		lm_GiveXP(iStunner, GetEventBool(event, "big_stun") ? g_iXPForStunning * 2 : g_iXPForStunning, 1);
@@ -300,7 +300,7 @@ public Event_RoundWin(Handle:event, const String:name[], bool:dontBroadcast)
 		new team = GetEventInt(event, "team");
 
 		for (new client = 1; client <= MaxClients; client++) {
-			if(GetClientTeam(client) == team) {
+			if(IsClientInGame(client) && GetClientTeam(client) == team) {
 				lm_GiveXP(client, g_iXPForWinning, 1);
 			}
 		}
