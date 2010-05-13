@@ -270,7 +270,7 @@ public Event_RoundWin(Handle:event, const String:name[], bool:dontBroadcast)
 			new team = GetEventInt(event, "team");
 
 			for (new client = 1; client <= MaxClients; client++) {
-				if(GetClientTeam(client) == team) {
+				if(IsClientInGame(client) && GetClientTeam(client) == team) {
 					lm_GiveXP(client, g_iXPFor[iEID], 1);
 				}
 			}
