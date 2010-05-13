@@ -175,7 +175,7 @@ public Event_Box(Handle:event, const String:name[], bool:dontBroadcast)
 		if(iEID != -1) {
 			new iActor = GetClientOfUserId(GetEventInt(event,g_sKey[iEID]));
 
-			if (!IsClientInGame(iActor))
+			if (iActor == 0 || iActor > MaxClients || !IsClientInGame(iActor))
 				return;
 
 			if (!StrEqual(g_sCondition[iEID],"") && GetEventBool(event, g_sCondition[iEID]) != g_bMustBe[iEID]) {
@@ -316,7 +316,7 @@ DumpHeals(client)
 	new iTotalHealPoints = GetEntData(client, g_iHealsOff);
 	new iLifeHealPoints = iTotalHealPoints - g_iHealPointCache[client];
 
-	if (iLifeHealPoints > 0 && TF2_GetPlayerClass(client) != TFClass_Medic)
+	if (iLifeHealPoints > 0 && client > 0 && client < MaxClients && IsClientInGame(client) && TF2_GetPlayerClass(client) != TFClass_Medic)
 	{
 		new amount = RoundFloat(iLifeHealPoints * g_fHealExpMult);
 		if(amount > 0 && lm_GetClientLevel(client) < lm_GetLevelMax()) {
